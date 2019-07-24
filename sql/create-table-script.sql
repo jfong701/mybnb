@@ -76,6 +76,16 @@ CREATE TABLE Users (
     -- Ensure User is 18 years old through trigger
 );
 
+DROP TABLE IF EXISTS Roomtypes CASCADE;
+CREATE TABLE Roomtypes (
+	Id INTEGER NOT NULL auto_increment,
+    RoomtypeName VARCHAR(150) NOT NULL,
+    RoomtypeDescription VARCHAR(1000) NOT NULL, 
+    
+    PRIMARY KEY(Id),
+    UNIQUE(RoomtypeName)
+);
+
 DROP TABLE IF EXISTS Listings CASCADE;
 CREATE TABLE Listings (
     Id INTEGER NOT NULL auto_increment,
@@ -88,11 +98,14 @@ CREATE TABLE Listings (
     Address VARCHAR(1000) NOT NULL,
     CheckInTime TIME NOT NULL,
     CheckOutTime TIME NOT NULL,
+    MaxNumGuests SMALLINT UNSIGNED NOT NULL,
     CountryId INTEGER NOT NULL,
+    RoomTypeId INTEGER NOT NULL,
     ListerId INTEGER NOT NULL,
 
     PRIMARY KEY(Id),
     FOREIGN KEY (CountryId) REFERENCES Countries(Id) ON DELETE CASCADE,
+    FOREIGN KEY (RoomTypeId) REFERENCES Roomtypes(Id) ON DELETE CASCADE,
     FOREIGN KEY (ListerId) REFERENCES Listers(Id) ON DELETE CASCADE,
 
     -- Ensure Latitude and Longitude Values are within valid range
@@ -100,7 +113,10 @@ CREATE TABLE Listings (
     CHECK(Longitude >= -180 AND Longitude <= 180),
 
     -- Ensure CheckInTime is after CheckOutTime
-    CHECK(CheckInTime >= CheckOutTime)
+    CHECK(CheckInTime >= CheckOutTime),
+    
+    -- Ensure num guests is positive
+    CHECK(MaxNumGuests > 0 AND MaxNumGuests < 100)
 );
 
 DROP TABLE IF EXISTS Payments CASCADE;
