@@ -26,6 +26,7 @@ CREATE TABLE Creditcards (
     AccountHolderName VARCHAR(500) NOT NULL,
     
     PRIMARY KEY(CardNumber)
+    -- expiry date check is done in Triggers
 );
 
 
@@ -57,8 +58,8 @@ CREATE TABLE Users (
     Address VARCHAR(1000) NOT NULL,
     City VARCHAR(1000) NOT NULL,
     DOB DATE NOT NULL,
-    CreatedAt DATETIME NOT NULL,
-    LastLoggedInAt DATETIME NOT NULL,
+    CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    LastLoggedInAt DATETIME,
     CountryId INTEGER NOT NULL,
     ListerId INTEGER,
     RenterId INTEGER,
@@ -66,9 +67,12 @@ CREATE TABLE Users (
     PRIMARY KEY (SIN),
     FOREIGN KEY(CountryId) REFERENCES Countries(Id) ON DELETE CASCADE,
     FOREIGN KEY(ListerId) REFERENCES Listers(Id) ON DELETE CASCADE,
-    FOREIGN KEY(RenterId) REFERENCES Renters(Id) ON DELETE CASCADE
+    FOREIGN KEY(RenterId) REFERENCES Renters(Id) ON DELETE CASCADE,
     
-    
+    -- ensure unique email entries -> using this as a 'login' for now
+	UNIQUE(Email),
+    -- Some basic validation on the form of an email
+    CHECK(EMAIL LIKE '%@%.%')
     -- Ensure User is 18 years old through trigger
 );
 
@@ -89,7 +93,14 @@ CREATE TABLE Listings (
         
     PRIMARY KEY(Id),
     FOREIGN KEY (CountryId) REFERENCES Countries(Id) ON DELETE CASCADE,
-    FOREIGN KEY (ListerId) REFERENCES Listers(Id) ON DELETE CASCADE
+    FOREIGN KEY (ListerId) REFERENCES Listers(Id) ON DELETE CASCADE,
+    
+    -- Ensure Latitude and Longitude Values are within valid range
+    CHECK(Latitude >= -90 AND Latitude <= 90),
+    CHECK(Longitude >= -180 AND Longitude <= 180),
+    
+    -- Ensure CheckInTime is after CheckOutTime
+    CHECK(CheckInTime >= CheckOutTime)
 );
 
 DROP TABLE IF EXISTS Payments CASCADE;
@@ -103,7 +114,10 @@ CREATE TABLE Payments (
     
     PRIMARY KEY(Id),
     FOREIGN KEY (PaypalEmail) REFERENCES Paypals(Email) ON DELETE CASCADE,
-    FOREIGN KEY (CreditcardNumber) REFERENCES Creditcards(CardNumber) ON DELETE CASCADE
+    FOREIGN KEY (CreditcardNumber) REFERENCES Creditcards(CardNumber) ON DELETE CASCADE,
+    
+    -- ensure transaction amounts are not negative.
+    CHECK(Amount >= 0)
 );
 
 DROP TABLE IF EXISTS Bookings CASCADE;
@@ -130,7 +144,10 @@ CREATE TABLE Calendars (
     
 	PRIMARY KEY(Id),
     FOREIGN KEY (ListingId) REFERENCES Listings(Id) ON DELETE CASCADE,
-    FOREIGN KEY (BookingId) REFERENCES Bookings(Id) ON DELETE CASCADE
+    FOREIGN KEY (BookingId) REFERENCES Bookings(Id) ON DELETE CASCADE,
+    
+    -- ensure prices are positive
+    CHECK(Price >= 0)
 );
 
 DROP TABLE IF EXISTS BookingsCalendars CASCADE;
@@ -158,13 +175,29 @@ CREATE TABLE ListingsCalendars (
 );
 
 
--- Using a trigger as a 'check', since CHECK no longer works with
--- nondeterministic functions such as CURDATE() as of mysql 8.0.16
+-- TRIGGER 'CHECKS', Mostly time-based checks are here, since
+-- MYSQL CHECK in the CREATE TABLE no longer works with
+-- non-deterministic functions such as CURDATE() as of mysql 8.0.16
+-- as a result, a lot of the time-based checks are done here
+
+-- Checking if Users are at least 18 to be added to Users
 delimiter |
 CREATE TRIGGER dob_check BEFORE INSERT ON Users
     FOR EACH ROW
     BEGIN
         IF TIMESTAMPDIFF(YEAR, NEW.DOB, CURDATE()) >= 18 THEN
+            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Error: Cannot Create User, User is under 18';
+        END IF;
+    END
+|
+delimiter ;
+
+-- Checking if Credit Card used is not expired yet
+delimiter |
+CREATE TRIGGER cc_expiry_check BEFORE INSERT ON Creditcards
+    FOR EACH ROW
+    BEGIN
+        IF TIMESTAMPDIFF(MONTH, CURDATE(), NEW.ExpiryDate) > 0 THEN
             SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Error: Cannot Create User, User is under 18';
         END IF;
     END
