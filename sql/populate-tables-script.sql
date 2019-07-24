@@ -19,6 +19,7 @@ LOAD DATA
 select * from Amenitycategories;
 
 -- Amenities (always the same), linked to Amenitycategories
+-- --------------------------------------------------------------------------------------------------------
 SET @basicCategoryId = CAST((SELECT Id FROM Amenitycategories WHERE CategoryName='Basic') AS UNSIGNED);
 INSERT INTO Amenities(AmenityName, AmenityDescription, AmenitycategoryId)
 VALUES('Wifi', 'Continuous access in the listing', @basicCategoryId),
@@ -74,7 +75,14 @@ VALUES('Fire extinguisher', NULL, @safetyFeaturesId),
 ('Smoke detector', NULL, @safetyFeaturesId),
 ('First aid kit', NULL, @safetyFeaturesId)
 ;
+-- --------------------------------------------------------------------------------------------------------
 
+-- RoomTypes (always the same)
+INSERT INTO RoomTypes(RoomtypeName, RoomtypeDescription)
+VALUES('Entire home/apt', 'The entire listing is private. No facilities are shared.'),
+('Private room', 'The listing has a private room, other facilities may be shared (eg shared washroom, or shared laundry facilities if available)'),
+('Shared room', 'All rooms are shared with the homeowner and/or other guests')
+;
 
 -- LOAD DATA 
 -- 	INFILE '../Uploads/Paypals.txt'

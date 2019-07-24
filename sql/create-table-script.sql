@@ -91,6 +91,7 @@ CREATE TABLE Listings (
     Id INTEGER NOT NULL auto_increment,
     Title VARCHAR(50) NOT NULL, -- this is the actual airbnb limit
     ListingDescription VARCHAR(1000) NOT NULL,
+    BasePrice DECIMAL(19,4) NOT NULL,
     Latitude DECIMAL(9, 6) NOT NULL,
     Longitude DECIMAL(9, 6) NOT NULL,
     City VARCHAR(1000) NOT NULL,
@@ -154,7 +155,7 @@ CREATE TABLE Calendars (
     Id INTEGER NOT NULL auto_increment,
     DayOfStay DATE NOT NULL,
     Price DECIMAL(19, 4) NOT NULL,
-    IsAvailable BIT NOT NULL,
+    IsAvailable BIT NOT NULL DEFAULT TRUE,
     ListingId INTEGER NOT NULL,
     BookingId INTEGER,
 
@@ -304,4 +305,15 @@ CREATE TRIGGER cc_expiry_check BEFORE INSERT ON Creditcards
         END IF;
     END
 |
+delimiter ;
+
+-- ACTUAL TRIGGERS
+-- When a listing is created, Set it as available for the next 3 months for calendar entries.
+-- TODO WIP : ONLY creates one entry at the moment, will figure out how to make it loop, once it is tested on one entry
+delimiter |
+CREATE TRIGGER generate_calendar_entries BEFORE INSERT ON Listings
+	FOR EACH ROW
+    BEGIN
+		INSERT INTO Calendars(DayOfStay, Price, IsAvailable, ListingId, BookingId) VALUES(CURDATE(), NEW.BasePrice, 1, NEW.Id, NULL);
+    END
 delimiter ;
