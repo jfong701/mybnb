@@ -5,7 +5,7 @@ USE mybnbdev;
 
 DROP TABLE IF EXISTS Countries CASCADE;
 CREATE TABLE Countries (
-	Id INTEGER NOT NULL AUTO_INCREMENT,
+    Id INTEGER NOT NULL AUTO_INCREMENT,
     CountryName VARCHAR(500) NOT NULL,
     
     PRIMARY KEY(Id)
@@ -70,7 +70,7 @@ CREATE TABLE Users (
     FOREIGN KEY(RenterId) REFERENCES Renters(Id) ON DELETE CASCADE,
     
     -- ensure unique email entries -> using this as a 'login' for now
-	UNIQUE(Email),
+    UNIQUE(Email),
     -- Some basic validation on the form of an email
     CHECK(EMAIL LIKE '%@%.%')
     -- Ensure User is 18 years old through trigger
@@ -105,7 +105,7 @@ CREATE TABLE Listings (
 
 DROP TABLE IF EXISTS Payments CASCADE;
 CREATE TABLE Payments (
-	Id INTEGER NOT NULL auto_increment,
+    Id INTEGER NOT NULL auto_increment,
     Amount DECIMAL(19, 4) NOT NULL,
     ProcessedOn DATETIME NOT NULL,
     RefundedOn DATETIME,
@@ -122,7 +122,7 @@ CREATE TABLE Payments (
 
 DROP TABLE IF EXISTS Bookings CASCADE;
 CREATE TABLE Bookings (
-	Id INTEGER NOT NULL auto_increment,
+    Id INTEGER NOT NULL auto_increment,
     RenterId INTEGER NOT NULL,
     PaymentId INTEGER NOT NULL,
     CancelledById INTEGER NOT NULL,
@@ -135,14 +135,14 @@ CREATE TABLE Bookings (
 
 DROP TABLE IF EXISTS Calendars CASCADE;
 CREATE TABLE Calendars (
-	Id INTEGER NOT NULL auto_increment,
+    Id INTEGER NOT NULL auto_increment,
     DayOfStay DATE NOT NULL,
     Price DECIMAL(19, 4) NOT NULL,
     IsAvailable BIT NOT NULL,
     ListingId INTEGER NOT NULL,
     BookingId INTEGER,
     
-	PRIMARY KEY(Id),
+    PRIMARY KEY(Id),
     FOREIGN KEY (ListingId) REFERENCES Listings(Id) ON DELETE CASCADE,
     FOREIGN KEY (BookingId) REFERENCES Bookings(Id) ON DELETE CASCADE,
     
@@ -152,28 +152,58 @@ CREATE TABLE Calendars (
 
 DROP TABLE IF EXISTS BookingsCalendars CASCADE;
 CREATE TABLE BookingsCalendars (
-	Id INTEGER NOT NULL auto_increment,
+    Id INTEGER NOT NULL auto_increment,
     BookingId INTEGER NOT NULL,
     StartCalendarId INTEGER NOT NULL,
     EndCalendarId INTEGER NOT NULL,
     
     PRIMARY KEY(Id),
-	FOREIGN KEY (BookingId) REFERENCES Bookings(Id) ON DELETE CASCADE,
+    FOREIGN KEY (BookingId) REFERENCES Bookings(Id) ON DELETE CASCADE,
     FOREIGN KEY (StartCalendarId) REFERENCES Calendars(Id) ON DELETE CASCADE,
     FOREIGN KEY (EndCalendarId) REFERENCES Calendars(Id) ON DELETE CASCADE
 );
 
 DROP TABLE IF EXISTS ListingsCalendars CASCADE;
 CREATE TABLE ListingsCalendars (
-	Id INTEGER NOT NULL auto_increment,
+    Id INTEGER NOT NULL auto_increment,
     ListingId INTEGER NOT NULL,
     CalendarId INTEGER NOT NULL,
     
     PRIMARY KEY(Id),
-	FOREIGN KEY (ListingId) REFERENCES Listings(Id) ON DELETE CASCADE,
+    FOREIGN KEY (ListingId) REFERENCES Listings(Id) ON DELETE CASCADE,
     FOREIGN KEY (CalendarId) REFERENCES Calendars(Id) ON DELETE CASCADE
 );
 
+DROP TABLE IF EXISTS Amenitycategories CASCADE;
+CREATE TABLE Amenitycategories (
+    Id INTEGER NOT NULL auto_increment,
+    CategoryName VARCHAR(100) NOT NULL,
+    
+    PRIMARY KEY(Id),
+    UNIQUE(CategoryName)
+);
+
+DROP TABLE IF EXISTS Amenities CASCADE;
+CREATE TABLE Amenities (
+    Id INTEGER NOT NULL auto_increment,
+    AmenityName VARCHAR(100) NOT NULL,
+    AmenityDescription VARCHAR(250),
+    AmenitycategoryId INTEGER NOT NULL,
+    
+    PRIMARY KEY(Id),
+    FOREIGN KEY (AmenitycategoryId) REFERENCES Amenitycategories(Id) ON DELETE CASCADE
+);
+
+DROP TABLE IF EXISTS ListingAmenities CASCADE;
+CREATE TABLE ListingAmenities (
+    Id INTEGER NOT NULL auto_increment,
+    ListingId INTEGER NOT NULL,
+    AmenityId INTEGER NOT NULL,
+    
+    PRIMARY KEY(Id),
+    FOREIGN KEY (ListingId) REFERENCES Listings(Id) ON DELETE CASCADE,
+    FOREIGN KEY (AmenityId) REFERENCES Amenities(Id) ON DELETE CASCADE
+);
 
 -- TRIGGER 'CHECKS', Mostly time-based checks are here, since
 -- MYSQL CHECK in the CREATE TABLE no longer works with
