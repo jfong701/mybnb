@@ -2,10 +2,14 @@ package jdbc;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+
+import javax.sql.rowset.CachedRowSet;
+import javax.sql.rowset.RowSetProvider;
 
 public class MySqlConnection {
 	private static final String dbClassName = "com.mysql.cj.jdbc.Driver";
@@ -67,14 +71,51 @@ public class MySqlConnection {
 
 	/* Generic function to execute a query, and get a ResultSet */
 	public ResultSet execute(String query) throws SQLException {
-		ResultSet result = null;
+		ResultSet rs = null;
+		CachedRowSet crs = null;
 		try {
 			Statement statement = conn.createStatement();
-			result = statement.executeQuery(query);
+			rs = statement.executeQuery(query);
+			
+			// copy out rowset to a CachedRowSet, so we can close the rowset connection
+			crs = RowSetProvider.newFactory().createCachedRowSet();
+			crs.populate(rs);
 		} catch (SQLException e) {
 			e.printStackTrace();
+		} finally {
+			try {
+				rs.close();
+			}
+			catch(SQLException e) {
+				System.out.print("Unable to close resultset");
+			}
 		}
-		return result;
+		return crs;
+	}
+
+	/*
+	 * Generic function to execute a prepared statement Used for INSERT INTO
+	 * tablename VALUES ( ? ? ? ? ? ) values is a variable parameter argument,
+	 * depends on the table we are inserting into
+	 */
+	public void preparedExecute(String query, Object... values) throws SQLException {
+		PreparedStatement pst = null;
+		try {
+			pst = conn.prepareStatement(query);
+			int paramNum = 1;
+			for (Object obj : values) {
+				pst.setObject(paramNum++, obj);
+			}
+			pst.execute();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {				
+				pst.close();
+			} catch(SQLException e) {
+				System.out.print("Unable to close preparedstatement");
+			}
+		}
 	}
 
 	public void PrintResultSetOutput(ResultSet rs) {
