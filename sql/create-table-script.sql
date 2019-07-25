@@ -316,11 +316,16 @@ delimiter ;
 -- ACTUAL TRIGGERS
 -- When a listing is created, Set it as available for the next 3 months for calendar entries.
 -- TODO WIP : ONLY creates one entry at the moment, will figure out how to make it loop, once it is tested on one entry
+SET @x = 0;
 delimiter |
 CREATE TRIGGER generate_calendar_entries AFTER INSERT ON Listings
 	FOR EACH ROW
     BEGIN
-		INSERT INTO Calendars(DayOfStay, Price, IsAvailable, ListingId, BookingId) VALUES(CURDATE(), NEW.BasePrice, TRUE, NEW.Id, NULL);
+		WHILE @x <= 90 DO
+			INSERT INTO Calendars(DayOfStay, Price, IsAvailable, ListingId, BookingId) VALUES(ADDDATE(CURDATE(), @x), NEW.BasePrice, TRUE, NEW.Id, NULL);
+            SET @x = @x + 1;
+		END WHILE;
+        SET @x = 0;
     END
 |
 delimiter ;
