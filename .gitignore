@@ -11,7 +11,8 @@
 .mtj.tmp/
 
 # Package Files #
-*.jar
+# Want to include the needed jdbc driver
+#*.jar
 *.war
 *.nar
 *.ear
