@@ -84,6 +84,21 @@ VALUES('Entire home/apt', 'The entire listing is private. No facilities are shar
 ('Shared room', 'All rooms are shared with the homeowner and/or other guests')
 ;
 
+---------------------------------------------
+-- Create a User
+SET @USAId = CAST((SELECT Id FROM Countries WHERE CountryName = 'United States') AS UNSIGNED);
+SET @UKId = CAST((SELECT Id FROM Countries WHERE CountryName = 'United Kingdom') AS UNSIGNED);
+SET @NZId = CAST((SELECT Id FROM Countries WHERE CountryName = 'New Zealand') AS UNSIGNED);
+INSERT INTO Users(SIN, Email, FirstName, LastName, Occupation, Address, City, DOB, CountryId, ListerId, RenterId)
+VALUES
+(63, 'km@m.com', 'Kurtis', 'Maceur', 'Marketing Manager', '7955 Badeau Drive', 'San Diego', '1994-02-24', @USAId, NULL, NULL),
+(81, 'lh@h.com', 'Lurette', 'Habbershon', 'Legal Assistant', '19 Russell Lane', 'London', '1954-08-29', @UKId, NULL, NULL),
+(56, 'vg@g.com', 'Vinnie', 'Goodridge', 'Help Desk Operator', '52427 Pennsylvania Park', 'Dunedin', '1970-10-04', @NZId, NULL, NULL)
+;
+
+
+
+
 -- LOAD DATA 
 -- 	INFILE '../Uploads/Paypals.txt'
 -- 	INTO TABLE Paypals

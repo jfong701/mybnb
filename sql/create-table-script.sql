@@ -288,7 +288,7 @@ delimiter |
 CREATE TRIGGER dob_check BEFORE INSERT ON Users
     FOR EACH ROW
     BEGIN
-        IF TIMESTAMPDIFF(YEAR, NEW.DOB, CURDATE()) >= 18 THEN
+        IF TIMESTAMPDIFF(YEAR, NEW.DOB, CURDATE()) <= 18 THEN
             SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Error: Cannot Create User, User is under 18';
         END IF;
     END
