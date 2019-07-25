@@ -13,7 +13,7 @@ CREATE TABLE Countries (
 
 DROP TABLE IF EXISTS Users CASCADE;
 CREATE TABLE Users (
-    SIN INTEGER NOT NULL,
+    UserSIN INTEGER NOT NULL,
     Email VARCHAR(320) NOT NULL,
     FirstName VARCHAR(1000) NOT NULL,
     LastName VARCHAR(1000) NOT NULL,
@@ -27,7 +27,7 @@ CREATE TABLE Users (
 --     ListerId INTEGER,
 --     RenterId INTEGER,
 
-    PRIMARY KEY (SIN),
+    PRIMARY KEY (UserSIN),
     FOREIGN KEY(CountryId) REFERENCES Countries(Id) ON DELETE CASCADE,
 --     FOREIGN KEY(ListerId) REFERENCES Listers(Id) ON DELETE CASCADE,
 --     FOREIGN KEY(RenterId) REFERENCES Renters(Id) ON DELETE CASCADE,
@@ -66,19 +66,19 @@ CREATE TABLE Listers (
     
     PRIMARY KEY(Id),
     FOREIGN KEY(PaypalEmail) REFERENCES Paypals(Email) ON DELETE CASCADE,
-    FOREIGN KEY(UserSIN) REFERENCES Users(SIN) ON DELETE CASCADE,
+    FOREIGN KEY(UserSIN) REFERENCES Users(UserSIN) ON DELETE CASCADE,
     UNIQUE(UserSIN)
 );
 
 DROP TABLE IF EXISTS Renters CASCADE;
 CREATE TABLE Renters (
     Id INT NOT NULL AUTO_INCREMENT,
-    CreditcardNumber VARCHAR(16) NULL,
+    CreditcardNumber VARCHAR(19) NULL,
     UserSIN INTEGER NOT NULL,
 
     PRIMARY KEY(Id),
     FOREIGN KEY(CreditcardNumber) REFERENCES Creditcards(CardNumber) ON DELETE CASCADE,
-    FOREIGN KEY(UserSIN) REFERENCES Users(SIN) ON DELETE CASCADE,
+    FOREIGN KEY(UserSIN) REFERENCES Users(UserSIN) ON DELETE CASCADE,
     UNIQUE(UserSIN)
 );
 
@@ -101,7 +101,7 @@ CREATE TABLE Listings (
     Latitude DECIMAL(9, 6) NOT NULL,
     Longitude DECIMAL(9, 6) NOT NULL,
     City VARCHAR(1000) NOT NULL,
-    PostalCode VARCHAR(7) NOT NULL,
+    PostalCode VARCHAR(100) NOT NULL,
     Address VARCHAR(1000) NOT NULL,
     CheckInTime TIME NOT NULL,
     CheckOutTime TIME NOT NULL,
@@ -153,7 +153,7 @@ CREATE TABLE Bookings (
     PRIMARY KEY(Id),
     FOREIGN KEY (RenterId) REFERENCES Renters(Id) ON DELETE CASCADE,
     FOREIGN KEY (PaymentId) REFERENCES Payments(Id) ON DELETE CASCADE,
-    FOREIGN KEY (CancelledById) REFERENCES Users(SIN) ON DELETE CASCADE
+    FOREIGN KEY (CancelledById) REFERENCES Users(UserSIN) ON DELETE CASCADE
 );
 
 DROP TABLE IF EXISTS Calendars CASCADE;
@@ -306,8 +306,8 @@ delimiter |
 CREATE TRIGGER cc_expiry_check BEFORE INSERT ON Creditcards
     FOR EACH ROW
     BEGIN
-        IF TIMESTAMPDIFF(MONTH, CURDATE(), NEW.ExpiryDate) > 0 THEN
-            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Error: Cannot Create User, User is under 18';
+        IF TIMESTAMPDIFF(MONTH, CURDATE(), NEW.ExpiryDate) < 0 THEN
+            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Error: Credit card is already expired';
         END IF;
     END
 |
@@ -316,10 +316,16 @@ delimiter ;
 -- ACTUAL TRIGGERS
 -- When a listing is created, Set it as available for the next 3 months for calendar entries.
 -- TODO WIP : ONLY creates one entry at the moment, will figure out how to make it loop, once it is tested on one entry
+SET @x = 0;
 delimiter |
-CREATE TRIGGER generate_calendar_entries BEFORE INSERT ON Listings
+CREATE TRIGGER generate_calendar_entries AFTER INSERT ON Listings
 	FOR EACH ROW
     BEGIN
-		INSERT INTO Calendars(DayOfStay, Price, IsAvailable, ListingId, BookingId) VALUES(CURDATE(), NEW.BasePrice, 1, NEW.Id, NULL);
+		WHILE @x <= 90 DO
+			INSERT INTO Calendars(DayOfStay, Price, IsAvailable, ListingId, BookingId) VALUES(ADDDATE(CURDATE(), @x), NEW.BasePrice, TRUE, NEW.Id, NULL);
+            SET @x = @x + 1;
+		END WHILE;
+        SET @x = 0;
     END
+|
 delimiter ;

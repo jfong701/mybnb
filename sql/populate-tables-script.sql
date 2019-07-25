@@ -91,7 +91,7 @@ SET @UKId = CAST((SELECT Id FROM Countries WHERE CountryName = 'United Kingdom')
 SET @NZId = CAST((SELECT Id FROM Countries WHERE CountryName = 'New Zealand') AS UNSIGNED);
 SET @JapanId = CAST((SELECT Id FROM Countries WHERE CountryName = 'Japan') AS UNSIGNED);
 SET @FranceId = CAST((SELECT Id FROM Countries WHERE CountryName = 'France') AS UNSIGNED);
-INSERT INTO Users(SIN, Email, FirstName, LastName, Occupation, Address, City, DOB, CountryId)
+INSERT INTO Users(UserSIN, Email, FirstName, LastName, Occupation, Address, City, DOB, CountryId)
 VALUES
 (63, 'km@m.com', 'Kurtis', 'Maceur', 'Marketing Manager', '7955 Badeau Drive', 'San Diego', '1994-02-24', @USAId),
 (66, 'lh@h.com', 'Lurette', 'Habbershon', 'Legal Assistant', '19 Russell Lane', 'London', '1954-08-29', @UKId),
@@ -108,26 +108,31 @@ VALUES
 INSERT INTO Paypals(Email, AccountHolderName)
 SELECT Email, CONCAT(FIRSTNAME, ' ', LASTNAME)
 FROM Users
-WHERE SIN IN (63, 66);
+WHERE UserSIN IN (63, 66);
 
 -- set up listers
 INSERT INTO Listers(PaypalEmail, UserSIN)
-SELECT Email, SIN
+SELECT Email, UserSIN
 FROM Users
-WHERE SIN IN (63, 66);
+WHERE UserSIN IN (63, 66);
 
 -- set up creditcards
 INSERT INTO Creditcards(CardNumber, ExpiryDate, AccountHolderName)
 VALUES
 (1234123412341234123, '2020-08-05', 'Vinnie Goodridge'),
-(1234123412341234123, '2021-08-05', 'Juliana Cossins');
+(4321432143214321, '2021-08-05', 'Juliana Cossins');
 
 -- set up renters
-INSERT INTO 
+INSERT INTO Renters(CreditcardNumber, UserSIN)
+SELECT CardNumber, UserSIN
+FROM Creditcards AS C
+LEFT JOIN Users AS U ON C.AccountHolderName = CONCAT(U.FirstName, ' ', U.LastName);
 
-
-
-
+-- set up a listing
+INSERT INTO
+Listings(Title, ListingDescription, BasePrice, Latitude, Longitude, City, PostalCode, Address, CheckInTime, CheckOutTime, MaxNumGuests, CountryId, RoomTypeId, ListerId)
+VALUES('Beautiful home in the Gaslamp quarter.', 'Ideally located home close to transit, and historic sights, here is some other stuff', 245, 32.713173, -117.161085, 'San Diego', 'CA 92101', '700 Fourth Ave', '16:00', '10:00', 4, @UsaId, 1, 1),
+('Private apartment in downtown.', 'Conveniently located close to downtown, close to many tourist attractions', 159, 32.719834, -117.165591, 'San Diego', 'CA 92101', '1300 Union St', '12:00', '10:00', 6, @UsaId, 1, 1);
 
 -- LOAD DATA 
 -- 	INFILE '../Uploads/Paypals.txt'
