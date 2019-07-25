@@ -89,12 +89,42 @@ VALUES('Entire home/apt', 'The entire listing is private. No facilities are shar
 SET @USAId = CAST((SELECT Id FROM Countries WHERE CountryName = 'United States') AS UNSIGNED);
 SET @UKId = CAST((SELECT Id FROM Countries WHERE CountryName = 'United Kingdom') AS UNSIGNED);
 SET @NZId = CAST((SELECT Id FROM Countries WHERE CountryName = 'New Zealand') AS UNSIGNED);
-INSERT INTO Users(SIN, Email, FirstName, LastName, Occupation, Address, City, DOB, CountryId, ListerId, RenterId)
+SET @JapanId = CAST((SELECT Id FROM Countries WHERE CountryName = 'Japan') AS UNSIGNED);
+SET @FranceId = CAST((SELECT Id FROM Countries WHERE CountryName = 'France') AS UNSIGNED);
+INSERT INTO Users(SIN, Email, FirstName, LastName, Occupation, Address, City, DOB, CountryId)
 VALUES
-(63, 'km@m.com', 'Kurtis', 'Maceur', 'Marketing Manager', '7955 Badeau Drive', 'San Diego', '1994-02-24', @USAId, NULL, NULL),
-(81, 'lh@h.com', 'Lurette', 'Habbershon', 'Legal Assistant', '19 Russell Lane', 'London', '1954-08-29', @UKId, NULL, NULL),
-(56, 'vg@g.com', 'Vinnie', 'Goodridge', 'Help Desk Operator', '52427 Pennsylvania Park', 'Dunedin', '1970-10-04', @NZId, NULL, NULL)
+(63, 'km@m.com', 'Kurtis', 'Maceur', 'Marketing Manager', '7955 Badeau Drive', 'San Diego', '1994-02-24', @USAId),
+(66, 'lh@h.com', 'Lurette', 'Habbershon', 'Legal Assistant', '19 Russell Lane', 'London', '1954-08-29', @UKId),
+(53, 'vg@g.com', 'Vinnie', 'Goodridge', 'Help Desk Operator', '52427 Pennsylvania Park', 'Dunedin', '1970-10-04', @NZId),
+(56, 'jc@c.com', 'Juliana', 'Cossins', 'Quality Control Specialist', '5709 Dorton Center', 'Kyoto', '1986-09-03', @JapanId),
+(33, 'ls@s.com', 'Luke', 'Sandeford', 'Accounting Assistant I', '40324 Lien Drive', 'Sable-sur-Sarthe', '1998-01-03', @FranceId)
 ;
+
+-- Choose Renters: Kurtis, Lurette
+-- Choose Listers: Vinnie, Juliana
+-- Neither one: Luke
+
+-- set up paypal accounts
+INSERT INTO Paypals(Email, AccountHolderName)
+SELECT Email, CONCAT(FIRSTNAME, ' ', LASTNAME)
+FROM Users
+WHERE SIN IN (63, 66);
+
+-- set up listers
+INSERT INTO Listers(PaypalEmail, UserSIN)
+SELECT Email, SIN
+FROM Users
+WHERE SIN IN (63, 66);
+
+-- set up creditcards
+INSERT INTO Creditcards(CardNumber, ExpiryDate, AccountHolderName)
+VALUES
+(1234123412341234123, '2020-08-05', 'Vinnie Goodridge'),
+(1234123412341234123, '2021-08-05', 'Juliana Cossins');
+
+-- set up renters
+INSERT INTO 
+
 
 
 

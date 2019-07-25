@@ -11,43 +11,6 @@ CREATE TABLE Countries (
     PRIMARY KEY(Id)
 );
 
-DROP TABLE IF EXISTS Paypals CASCADE;
-CREATE TABLE Paypals (
-    Email VARCHAR(320) NOT NULL,
-    AccountHolderName VARCHAR(500) NOT NULL,
-
-    PRIMARY KEY(Email)
-);
-
-DROP TABLE IF EXISTS Creditcards CASCADE;
-CREATE TABLE Creditcards (
-    CardNumber VARCHAR(16) NOT NULL,
-    ExpiryDate DATE NOT NULL,
-    AccountHolderName VARCHAR(500) NOT NULL,
-
-    PRIMARY KEY(CardNumber)
-    -- expiry date check is done in Triggers
-);
-
-
-DROP TABLE IF EXISTS Listers CASCADE;
-CREATE TABLE Listers (
-    Id INT NOT NULL AUTO_INCREMENT,
-    PaypalEmail VARCHAR(320) NULL,
-
-    PRIMARY KEY(Id),
-    FOREIGN KEY(PaypalEmail) REFERENCES Paypals(Email) ON DELETE CASCADE
-);
-
-DROP TABLE IF EXISTS Renters CASCADE;
-CREATE TABLE Renters (
-    Id INT NOT NULL AUTO_INCREMENT,
-    CreditcardNumber VARCHAR(16) NULL,
-
-    PRIMARY KEY(Id),
-    FOREIGN KEY(CreditcardNumber) REFERENCES Creditcards(CardNumber) ON DELETE CASCADE
-);
-
 DROP TABLE IF EXISTS Users CASCADE;
 CREATE TABLE Users (
     SIN INTEGER NOT NULL,
@@ -61,19 +24,62 @@ CREATE TABLE Users (
     CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     LastLoggedInAt DATETIME,
     CountryId INTEGER NOT NULL,
-    ListerId INTEGER,
-    RenterId INTEGER,
+--     ListerId INTEGER,
+--     RenterId INTEGER,
 
     PRIMARY KEY (SIN),
     FOREIGN KEY(CountryId) REFERENCES Countries(Id) ON DELETE CASCADE,
-    FOREIGN KEY(ListerId) REFERENCES Listers(Id) ON DELETE CASCADE,
-    FOREIGN KEY(RenterId) REFERENCES Renters(Id) ON DELETE CASCADE,
+--     FOREIGN KEY(ListerId) REFERENCES Listers(Id) ON DELETE CASCADE,
+--     FOREIGN KEY(RenterId) REFERENCES Renters(Id) ON DELETE CASCADE,
 
     -- ensure unique email entries -> using this as a 'login' for now
     UNIQUE(Email),
     -- Some basic validation on the form of an email
     CHECK(EMAIL LIKE '%@%.%')
     -- Ensure User is 18 years old through trigger
+);
+
+DROP TABLE IF EXISTS Paypals CASCADE;
+CREATE TABLE Paypals (
+    Email VARCHAR(320) NOT NULL,
+    AccountHolderName VARCHAR(500) NOT NULL,
+
+    PRIMARY KEY(Email)
+);
+
+DROP TABLE IF EXISTS Creditcards CASCADE;
+CREATE TABLE Creditcards (
+    CardNumber VARCHAR(19) NOT NULL,
+    ExpiryDate DATE NOT NULL,
+    AccountHolderName VARCHAR(500) NOT NULL,
+
+    PRIMARY KEY(CardNumber)
+    -- expiry date check is done in Triggers
+);
+
+
+DROP TABLE IF EXISTS Listers CASCADE;
+CREATE TABLE Listers (
+    Id INT NOT NULL AUTO_INCREMENT,
+    PaypalEmail VARCHAR(320) NULL,
+    UserSIN INTEGER NOT NULL,
+    
+    PRIMARY KEY(Id),
+    FOREIGN KEY(PaypalEmail) REFERENCES Paypals(Email) ON DELETE CASCADE,
+    FOREIGN KEY(UserSIN) REFERENCES Users(SIN) ON DELETE CASCADE,
+    UNIQUE(UserSIN)
+);
+
+DROP TABLE IF EXISTS Renters CASCADE;
+CREATE TABLE Renters (
+    Id INT NOT NULL AUTO_INCREMENT,
+    CreditcardNumber VARCHAR(16) NULL,
+    UserSIN INTEGER NOT NULL,
+
+    PRIMARY KEY(Id),
+    FOREIGN KEY(CreditcardNumber) REFERENCES Creditcards(CardNumber) ON DELETE CASCADE,
+    FOREIGN KEY(UserSIN) REFERENCES Users(SIN) ON DELETE CASCADE,
+    UNIQUE(UserSIN)
 );
 
 DROP TABLE IF EXISTS Roomtypes CASCADE;
