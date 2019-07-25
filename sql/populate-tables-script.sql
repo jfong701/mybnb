@@ -128,6 +128,14 @@ SELECT CardNumber, UserSIN
 FROM Creditcards AS C
 LEFT JOIN Users AS U ON C.AccountHolderName = CONCAT(U.FirstName, ' ', U.LastName);
 
+-- set up a listing
+INSERT INTO
+Listings(Title, ListingDescription, BasePrice, Latitude, Longitude, City, PostalCode, Address, CheckInTime, CheckOutTime, MaxNumGuests, CountryId, RoomTypeId, ListerId)
+VALUES
+('Beautiful home in the Gaslamp quarter.', 'Ideally located home close to transit, and historic sights, here is some other stuff', 245, 32.713173, -117.161085, 'San Diego', 'CA 92101', '700 Fourth Ave', '16:00', '10:00', 4, @UsaId, 1, 1),
+('Private apartment in downtown.', 'Conveniently located close to downtown, close to many tourist attractions', 159, 32.719834, -117.165591, 'San Diego', 'CA 92101', '1300 Union St', '12:00', '10:00', 6, @UsaId, 1, 1)
+;
+
 -- LOAD DATA 
 -- 	INFILE '../Uploads/Paypals.txt'
 -- 	INTO TABLE Paypals

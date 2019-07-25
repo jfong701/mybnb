@@ -101,7 +101,7 @@ CREATE TABLE Listings (
     Latitude DECIMAL(9, 6) NOT NULL,
     Longitude DECIMAL(9, 6) NOT NULL,
     City VARCHAR(1000) NOT NULL,
-    PostalCode VARCHAR(7) NOT NULL,
+    PostalCode VARCHAR(100) NOT NULL,
     Address VARCHAR(1000) NOT NULL,
     CheckInTime TIME NOT NULL,
     CheckOutTime TIME NOT NULL,
@@ -317,9 +317,10 @@ delimiter ;
 -- When a listing is created, Set it as available for the next 3 months for calendar entries.
 -- TODO WIP : ONLY creates one entry at the moment, will figure out how to make it loop, once it is tested on one entry
 delimiter |
-CREATE TRIGGER generate_calendar_entries BEFORE INSERT ON Listings
+CREATE TRIGGER generate_calendar_entries AFTER INSERT ON Listings
 	FOR EACH ROW
     BEGIN
-		INSERT INTO Calendars(DayOfStay, Price, IsAvailable, ListingId, BookingId) VALUES(CURDATE(), NEW.BasePrice, 1, NEW.Id, NULL);
+		INSERT INTO Calendars(DayOfStay, Price, IsAvailable, ListingId, BookingId) VALUES(CURDATE(), NEW.BasePrice, TRUE, NEW.Id, NULL);
     END
+|
 delimiter ;
