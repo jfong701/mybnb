@@ -25,20 +25,6 @@ public class MySqlConnection {
 	// Object which communicates with the SQL backend delivering to it the
 	// desired query from our application and returning the results of this
 	// execution the same way that are received from the SQL backend.
-	public static void main(String[] args) {
-		MySqlConnection a = new MySqlConnection();
-		a.connect();
-
-		String testQuery = "SELECT * FROM Countries;";
-		try {
-			ResultSet rs = a.execute(testQuery);
-			a.PrintResultSetOutput(rs);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-
-		a.disconnect();
-	}
 
 	/* Connect to Database */
 	public void connect() {
@@ -60,6 +46,7 @@ public class MySqlConnection {
 		try {
 			stmt.close();
 			conn.close();
+			System.out.println("Successfully disconnected from database");
 		} catch (SQLException e) {
 			System.err.println("Exception occured while disconnecting!");
 			e.printStackTrace();
@@ -70,13 +57,13 @@ public class MySqlConnection {
 	}
 
 	/* Generic function to execute a query, and get a ResultSet */
-	public ResultSet execute(String query) throws SQLException {
+	public CachedRowSet execute(String query) throws SQLException {
 		ResultSet rs = null;
 		CachedRowSet crs = null;
 		try {
 			Statement statement = conn.createStatement();
 			rs = statement.executeQuery(query);
-			
+
 			// copy out rowset to a CachedRowSet, so we can close the rowset connection
 			crs = RowSetProvider.newFactory().createCachedRowSet();
 			crs.populate(rs);
@@ -85,8 +72,7 @@ public class MySqlConnection {
 		} finally {
 			try {
 				rs.close();
-			}
-			catch(SQLException e) {
+			} catch (SQLException e) {
 				System.out.print("Unable to close resultset");
 			}
 		}
@@ -110,9 +96,9 @@ public class MySqlConnection {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
-			try {				
+			try {
 				pst.close();
-			} catch(SQLException e) {
+			} catch (SQLException e) {
 				System.out.print("Unable to close preparedstatement");
 			}
 		}
