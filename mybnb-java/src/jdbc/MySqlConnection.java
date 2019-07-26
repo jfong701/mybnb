@@ -78,6 +78,16 @@ public class MySqlConnection {
 		}
 		return crs;
 	}
+	
+	/* Generic function to execute an update query,*/
+	public void executeUpdate(String query) throws SQLException {
+		try {
+			Statement statement = conn.createStatement();
+			statement.executeUpdate(query);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
 
 	/*
 	 * Generic function to execute a prepared statement Used for INSERT INTO

@@ -12,6 +12,7 @@ import dbobjects.User;
 public class DAO {
 	
 	private MySqlConnection db;
+	public static final int INVALID_ID = -1;
 	
 	public DAO() throws SQLException {
 		db = new MySqlConnection();
@@ -58,6 +59,29 @@ public class DAO {
 		}
 	}
 	
+	public boolean addUser(User user) {
+		String query = "INSERT INTO Users(UserSIN, Email, FirstName, LastName, Occupation, Address, City, DOB, CountryId) " 
+				+ "VALUES ("
+				+ user.UserSIN + ", "
+				+ "'" + user.Email + "'" + ", "
+				+ "'" + user.FirstName + "'"  + ", "
+				+ "'" + user.LastName + "'" + ", "
+				+ "'" + user.Occupation + "'" + ", "
+				+ "'" + user.Address + "'" + ", "
+				+ "'" + user.City + "'" + ", "
+				+ "'" + user.DOB + "'" + ", "
+				+ user.CountryId + ");";
+		System.out.println(query);
+		try {
+			db.executeUpdate(query);
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+	
 	public User getUserByEmail(String email) {
 		String query = "SELECT * FROM Users WHERE Email = '" + email + "'";
 		CachedRowSet rs = null;
@@ -81,8 +105,23 @@ public class DAO {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-
 		return user;
+	}
+
+	// returns -1 if not a valid country
+	public int getCountryIdByCountryName(String countryName) {
+		String query = "SELECT Id FROM Countries WHERE CountryName = '" + countryName + "';";
+		CachedRowSet rs = null;
+		int returnId = INVALID_ID;
+		try {
+			rs = db.execute(query);
+			if (rs.first()) {
+				returnId = rs.getInt("Id");
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return returnId;
 	}
 	
 
@@ -138,4 +177,6 @@ public class DAO {
 		}
 		return result;
 	}
+	
+
 }

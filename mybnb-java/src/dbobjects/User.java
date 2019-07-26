@@ -31,7 +31,7 @@ public class User {
 		Occupation = occupation;
 		Address = address;
 		City = city;
-		DOB = dOB;
+		DOB = DOB;
 		CreatedAt = createdAt;
 		LastLoggedInAt = lastLoggedInAt;
 		CountryId = countryId;
