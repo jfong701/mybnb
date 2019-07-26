@@ -104,40 +104,4 @@ public class MySqlConnection {
 		}
 	}
 
-	public void PrintResultSetOutput(ResultSet rs) {
-		try {
-			ResultSetMetaData rsmd = rs.getMetaData();
-
-			// get header
-			// System.out.print("COLNUM, ");
-			for (int i = 1; i <= rsmd.getColumnCount(); i++) {
-				if (i > 1) {
-					System.out.print(", ");
-				}
-				System.out.print(rsmd.getColumnName(i));
-			}
-			System.out.println("");
-
-			rs.beforeFirst();
-			// for each row
-			// int colNum = 1;
-			while (rs.next()) {
-
-				// System.out.print(colNum + " | ");
-
-				// for each column in a row
-				for (int i = 1; i <= rsmd.getColumnCount(); i++) {
-					if (i > 1) {
-						System.out.print(" | ");
-					}
-					System.out.print(rs.getString(i));
-				}
-				// colNum++;
-				System.out.println("");
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-	}
-
 }

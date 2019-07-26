@@ -1,29 +1,61 @@
 package jdbc;
 
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.time.LocalDate;
 
 import javax.sql.rowset.CachedRowSet;
 
 public class DAO {
-	public static MySqlConnection db;
-
-	public static void main(String[] args) {
+	
+	private MySqlConnection db;
+	
+	public DAO() throws SQLException {
 		db = new MySqlConnection();
-		DAO dao = new DAO();
+		db.connect();
+	}
+	
+	public void endDAO() {
+		db.disconnect();
+	}
+	
+	public void PrintResultSetOutput(ResultSet rs) {
 		try {
-			db.connect();
+			ResultSetMetaData rsmd = rs.getMetaData();
 
-			db.PrintResultSetOutput(dao.getAllAmenities());
-			db.PrintResultSetOutput(dao.getListingsWithinRadius(32.715658, -117.16116, 0.6));
-			db.PrintResultSetOutput(dao.getListingsByPostalCode("CA"));
+			// get header
+			// System.out.print("COLNUM, ");
+			for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+				if (i > 1) {
+					System.out.print(", ");
+				}
+				System.out.print(rsmd.getColumnName(i));
+			}
+			System.out.println("");
 
+			rs.beforeFirst();
+			// for each row
+			// int colNum = 1;
+			while (rs.next()) {
+
+				// System.out.print(colNum + " | ");
+
+				// for each column in a row
+				for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+					if (i > 1) {
+						System.out.print(" | ");
+					}
+					System.out.print(rs.getString(i));
+				}
+				// colNum++;
+				System.out.println("");
+			}
 		} catch (SQLException e) {
 			e.printStackTrace();
-		} finally {
-			db.disconnect();
 		}
 	}
+	
 
 	public CachedRowSet getAllAmenities() {
 		CachedRowSet result = null;
