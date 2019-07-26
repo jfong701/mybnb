@@ -7,6 +7,8 @@ import java.time.LocalDate;
 
 import javax.sql.rowset.CachedRowSet;
 
+import dbobjects.User;
+
 public class DAO {
 	
 	private MySqlConnection db;
@@ -54,6 +56,33 @@ public class DAO {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public User getUserByEmail(String email) {
+		String query = "SELECT * FROM Users WHERE Email = '" + email + "'";
+		CachedRowSet rs = null;
+		User user = null;
+		try {
+			rs = db.execute(query);
+			if (rs.first()) {
+				user = new User();
+				user.UserSIN = rs.getInt("UserSIN");
+				user.Email = rs.getString("Email");
+				user.FirstName = rs.getString("FirstName");
+				user.LastName = rs.getString("LastName");
+				user.Occupation = rs.getString("Occupation");
+				user.Address = rs.getString("Address");
+				user.City = rs.getString("City");
+				user.DOB = rs.getDate("DOB");
+				user.CreatedAt = rs.getTimestamp("CreatedAt");
+				user.LastLoggedInAt = rs.getTimestamp("LastLoggedInAt");
+				user.CountryId = rs.getInt("CountryId");
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		return user;
 	}
 	
 

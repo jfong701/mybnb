@@ -50,20 +50,15 @@ public class CommandLine {
 			
 			String input = "";
 			int choice = -1;
-			boolean exit = false;
-			String accountEmail = "";
+			
+			View v = new View("INITIALSCREEN");
+			
 			do {
-				loginScreen(); //Print Menu
+				v.printMenu();
 				input = sc.nextLine();
 				try {
 					choice = Integer.parseInt(input);
-					switch (choice) { //Activate the desired functionality
-					case 1:
-						dao.PrintResultSetOutput(dao.getAllAmenities());
-						break;
-					default:
-						break;
-					}
+					v.viewName = v.choiceAction(choice, sc, dao);
 				} catch (NumberFormatException e) {
 					input = "-1";
 				}
@@ -76,15 +71,5 @@ public class CommandLine {
 			System.out.println("");
 			return false;
 		}
-	}
-	
-	//Print menu options
-	private static void loginScreen() {
-		System.out.println("=========LOGIN SCREEN=========");
-		System.out.println("0. Exit.");
-		System.out.println("1. Get all amenities");
-		System.out.println("2. Register as a new user");
-		System.out.println("3. Proceed as guest");
-		System.out.print("Choose one of the previous options [0-3]: ");
 	}
 }
