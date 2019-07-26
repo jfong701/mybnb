@@ -1,6 +1,8 @@
 package jdbc;
 
 import java.sql.SQLException;
+import java.time.LocalDate;
+
 import javax.sql.rowset.CachedRowSet;
 
 public class DAO {
@@ -12,8 +14,9 @@ public class DAO {
 		try {
 			db.connect();
 
-			dao.getAllAmenities();
-			dao.getListingsWithinRadius(32.715658, -117.16116, 0.6);
+			db.PrintResultSetOutput(dao.getAllAmenities());
+			db.PrintResultSetOutput(dao.getListingsWithinRadius(32.715658, -117.16116, 0.6));
+			db.PrintResultSetOutput(dao.getListingsByPostalCode("CA"));
 
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -22,13 +25,18 @@ public class DAO {
 		}
 	}
 
-	public void getAllAmenities() throws SQLException {
+	public CachedRowSet getAllAmenities() {
+		CachedRowSet result = null;
 		String query = "SELECT * FROM Amenities;";
-		CachedRowSet result = db.execute(query);
-		db.PrintResultSetOutput(result);
+		try {
+			result = db.execute(query);
+		} catch (SQLException e){
+			e.printStackTrace();
+		}
+		return result;
 	}
 	
-	public void getListingsWithinRadius(double lati, double longi, double searchRadiusKm) throws SQLException{
+	public CachedRowSet getListingsWithinRadius(double lati, double longi, double searchRadiusKm){
 		double earthRadius = 6378.1;
 		String query = "SELECT * FROM Listings "
 				+ "WHERE (2 * " + earthRadius
@@ -43,7 +51,30 @@ public class DAO {
 				+ "RADIANS(Longitude))/2)"
 				+ ",2)"
 				+ "))) > " + searchRadiusKm + ";";
-		CachedRowSet result = db.execute(query);
-		db.PrintResultSetOutput(result);
+		CachedRowSet result = null;
+		try {
+			result = db.execute(query);
+		} catch (SQLException e){
+			e.printStackTrace();
+		}
+		return result;
+	}
+	
+	public CachedRowSet getListingsWithinRadiusAndAvailable(double lati, double longi, double searchRadiusKm, LocalDate checkInDate, LocalDate checkOutDate) {
+		return null;
+	}
+	
+	
+	public CachedRowSet getListingsByPostalCode(String postalCode) throws SQLException{
+		String query = "SELECT * FROM Listings "
+				+ "WHERE "
+				+ "PostalCode LIKE '" + postalCode + "%'";
+		CachedRowSet result = null;
+		try {
+			result = db.execute(query);
+		} catch (SQLException e){
+			e.printStackTrace();
+		}
+		return result;
 	}
 }
