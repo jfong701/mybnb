@@ -147,6 +147,20 @@ public class DAO {
 		}
 		return renter;
 	}
+	
+	public boolean isUserALister(int userSIN) {
+		if (getListerByUserSIN(userSIN) != null) {
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean isUserARenter(int userSIN) {
+		if (getRenterByUserSIN(userSIN) != null) {
+			return true;
+		}
+		return false;
+	}
 
 	// returns -1 if not a valid country
 	public int getCountryIdByCountryName(String countryName) {

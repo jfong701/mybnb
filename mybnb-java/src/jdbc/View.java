@@ -40,7 +40,9 @@ public class View {
 			System.out.println("5. Admin Panel");
 			System.out.println("6. Become a renter");
 			System.out.println("7. Become a lister");
-			System.out.print("Choose one of the previous options [0-5]: ");
+			System.out.print("Choose one of the previous options [0-7]: ");
+		} else if (this.viewName == "LISTINGSCREEN") {
+			System.out.println("TODO: LISTINGSCREEN NOT IMPLEMENTED YET");
 		} else if (this.viewName == "LISTINGSCREEN") {
 			System.out.println("TODO: LISTINGSCREEN NOT IMPLEMENTED YET");
 		}
@@ -130,10 +132,10 @@ public class View {
 				return "SEARCHSCREEN";
 			case 3:
 				// View your listings
-				// check if logged in + user is a lister
+				// only allowed if logged in, and a lister.
 				if (this.loggedInUser == null) {
 					System.out.println("You are not currently logged in. Please log in to see your listings.");
-				} else if (dao.getListerByUserSIN(this.loggedInUser.UserSIN) == null) {
+				} else if (!dao.isUserALister(this.loggedInUser.UserSIN)) {
 					System.out.println("You are logged in, but not a lister. Please become a lister first.");
 				} else {
 					return "LISTINGSCREEN";
@@ -141,7 +143,14 @@ public class View {
 				break;
 			case 4:
 				// View your bookings
-				// check if logged in + user is a renter (if they have no bookings, say they have no bookings)
+				// Only allowed if logged in, and a renter
+				if (this.loggedInUser == null) {
+					System.out.println("You are not currently logged in. Please log in to see your bookings.");
+				} else if (!dao.isUserARenter(this.loggedInUser.UserSIN)) {
+					System.out.println("You are logged in, but not a renter. Please become a renter first.");
+				} else {
+					return "BOOKINGSCREEN";
+				}
 				break;
 			case 5:
 				// Go straight to the admin panel - forgot to add extra permissions in DB, would
@@ -149,6 +158,16 @@ public class View {
 				// of user
 
 				break;
+			case 6:
+				// Become a renter
+				// Go straight to the admin panel - forgot to add extra permissions in DB, would
+				// probably have added this as a separate flag in users, or as a different kind
+				// of user
+
+				break;
+			case 7:
+				// become a lister
+				
 			default:
 				break;
 			}
