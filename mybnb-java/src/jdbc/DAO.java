@@ -9,6 +9,7 @@ import javax.sql.rowset.CachedRowSet;
 
 import dbobjects.Creditcard;
 import dbobjects.Lister;
+import dbobjects.Paypal;
 import dbobjects.Renter;
 import dbobjects.User;
 
@@ -82,7 +83,9 @@ public class DAO {
 				+ "'" + user.City + "'" + ", "
 				+ "'" + user.DOB + "'" + ", "
 				+ user.CountryId + ");";
-		System.out.println(query);
+		if (Main.debug) {
+			System.out.println(query);
+		}
 		try {
 			db.executeUpdate(query);
 		}
@@ -99,7 +102,27 @@ public class DAO {
 				+ q(cc.CardNumber) + ", "
 				+ q(cc.ExpiryDate) + ", "
 				+ q(cc.AccountHolderName) + ");";
-		System.out.println(query);
+		if (Main.debug) {
+			System.out.println(query);
+		}
+		try {
+			db.executeUpdate(query);
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+	
+	public boolean addPaypal(Paypal pp) {
+		String query = "INSERT INTO Paypals(Email, AccountHolderName) "
+				+ "VALUES ("
+				+ q(pp.Email) + ", "
+				+ q(pp.AccountHolderName) + ");";
+		if (Main.debug) {
+			System.out.println(query);
+		}
 		try {
 			db.executeUpdate(query);
 		}
@@ -115,7 +138,27 @@ public class DAO {
 				+ "VALUES ("
 				+ q(renter.CreditcardNumber) + ", "
 				+ renter.userSIN + ");";
-		System.out.println(query);
+		if (Main.debug) {
+			System.out.println(query);
+		}
+		try {
+			db.executeUpdate(query);
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+	
+	public boolean addLister(Lister lister) {
+		String query = "INSERT INTO Listers(PaypalEmail, userSIN) "
+				+ "VALUES ("
+				+ q(lister.PaypalEmail) + ", "
+				+ lister.userSIN + ");";
+		if (Main.debug) {
+			System.out.println(query);
+		}
 		try {
 			db.executeUpdate(query);
 		}

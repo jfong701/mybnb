@@ -6,8 +6,15 @@ public class Lister {
 	public String PaypalEmail;
 	public int userSIN;
 	
+	// when creating listers from DB info
 	public Lister(int id, String paypalEmail, int userSIN) {
 		Id = id;
+		PaypalEmail = paypalEmail;
+		this.userSIN = userSIN;
+	}
+	
+	// When making a lister to add to the DB.
+	public Lister(String paypalEmail, int userSIN) {
 		PaypalEmail = paypalEmail;
 		this.userSIN = userSIN;
 	}

@@ -6,6 +6,8 @@ import java.text.SimpleDateFormat;
 import java.util.Scanner;
 
 import dbobjects.Creditcard;
+import dbobjects.Lister;
+import dbobjects.Paypal;
 import dbobjects.Renter;
 import dbobjects.User;
 
@@ -53,6 +55,12 @@ public class View {
 			System.out.println("=========BECOME A RENTER SCREEN=========");
 			System.out.println("0. Exit.");
 			System.out.println("1. Become a renter");
+			System.out.println("2. Back to main screen");
+			System.out.print("Choose one of the previous options [0-2]: ");
+		} else if (this.viewName == "BECOMEALISTERSCREEN") {
+			System.out.println("=========BECOME A LISTER SCREEN=========");
+			System.out.println("0. Exit.");
+			System.out.println("1. Become a lister");
 			System.out.println("2. Back to main screen");
 			System.out.print("Choose one of the previous options [0-2]: ");
 		}
@@ -174,8 +182,8 @@ public class View {
 				return "BECOMEARENTERSCREEN";
 			case 7:
 				// become a lister
-				break;
-				
+				// let the 'become a lister' screen handle not logged in users
+				return "BECOMEALISTERSCREEN";
 			case 8:
 				// go back to initial screen - where user can log out.
 				return "INITIALSCREEN";
@@ -237,6 +245,59 @@ public class View {
 					return "INITIALSCREEN";
 				} else {
 					System.out.println("User is already a renter");
+					return "MAINSCREEN";
+				}
+			case 2:
+				// Go back to main screen
+				return "MAINSCREEN";
+			default:
+				break;
+			}
+			// go back to mainscreen when done everything
+			return "MAINSCREEN";
+		} else if (this.viewName == "BECOMEALISTERSCREEN") {
+			switch (choice) {
+			case 1:
+				// become a lister -> ensure logged in, and ensure not a lister already then ask
+				// for prompts.
+				Lister tempLister = null;
+				Paypal tempPaypal = null;
+				if (this.loggedInUser != null && !dao.isUserALister(this.loggedInUser.UserSIN)) {
+					tempPaypal = new Paypal();
+
+					// add a credit card first					
+					System.out.print("Enter a Paypal email: ");
+					String input = sc.nextLine();
+					tempPaypal.Email = input.trim();
+					
+					System.out.print("Enter the paypal account holder's name: ");
+					input = sc.nextLine();
+					tempPaypal.AccountHolderName = input.trim();
+					
+					// save this paypal to the DB.
+					if (dao.addPaypal(tempPaypal)) {
+						System.out.println("Paypal added successfully");
+						
+						// using this credit card, add the renter.
+						tempLister = new Lister(
+								tempPaypal.Email,
+								this.loggedInUser.UserSIN
+								);
+						if (dao.addLister(tempLister)) {
+							System.out.println("Account successfully set as lister");
+							return "MAINSCREEN";
+						} else {
+							System.out.println("error setting as lister");
+						}
+					} else {
+						System.out.println("error adding paypal");
+					}
+
+				} else if (this.loggedInUser == null) {
+					System.out.println("Log into a user first to become a lister");
+					return "INITIALSCREEN";
+				} else {
+					System.out.println("User is already a lister");
 					return "MAINSCREEN";
 				}
 			case 2:
