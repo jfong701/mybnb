@@ -146,14 +146,25 @@ CREATE TABLE Payments (
 DROP TABLE IF EXISTS Bookings CASCADE;
 CREATE TABLE Bookings (
     Id INTEGER NOT NULL auto_increment,
+	Amount DECIMAL(19, 4) NOT NULL,
+    ProcessedOn DATETIME NOT NULL,
+    RefundedOn DATETIME,
+    PaypalEmail VARCHAR(320) NOT NULL,
+    CreditcardNumber VARCHAR(19) NOT NULL,
+	CancelledById INTEGER,
+    ListingId INTEGER NOT NULL,
     RenterId INTEGER NOT NULL,
-    PaymentId INTEGER NOT NULL,
-    CancelledById INTEGER NOT NULL,
 
     PRIMARY KEY(Id),
-    FOREIGN KEY (RenterId) REFERENCES Renters(Id) ON DELETE CASCADE,
-    FOREIGN KEY (PaymentId) REFERENCES Payments(Id) ON DELETE CASCADE,
-    FOREIGN KEY (CancelledById) REFERENCES Users(UserSIN) ON DELETE CASCADE
+	FOREIGN KEY (PaypalEmail) REFERENCES Paypals(Email) ON DELETE CASCADE,
+    FOREIGN KEY (CreditcardNumber) REFERENCES Creditcards(CardNumber) ON DELETE CASCADE,
+    FOREIGN KEY (CancelledById) REFERENCES Users(UserSIN) ON DELETE CASCADE,
+    FOREIGN KEY (ListingId) REFERENCES Listings(Id) ON DELETE CASCADE,
+	FOREIGN KEY (RenterId) REFERENCES Renters(Id) ON DELETE CASCADE,
+    
+    
+	-- ensure transaction amounts are not negative.
+    CHECK(Amount >= 0)
 );
 
 DROP TABLE IF EXISTS Calendars CASCADE;
@@ -171,30 +182,6 @@ CREATE TABLE Calendars (
 
     -- ensure prices are positive
     CHECK(Price >= 0)
-);
-
-DROP TABLE IF EXISTS BookingsCalendars CASCADE;
-CREATE TABLE BookingsCalendars (
-    Id INTEGER NOT NULL auto_increment,
-    BookingId INTEGER NOT NULL,
-    StartCalendarId INTEGER NOT NULL,
-    EndCalendarId INTEGER NOT NULL,
-
-    PRIMARY KEY(Id),
-    FOREIGN KEY (BookingId) REFERENCES Bookings(Id) ON DELETE CASCADE,
-    FOREIGN KEY (StartCalendarId) REFERENCES Calendars(Id) ON DELETE CASCADE,
-    FOREIGN KEY (EndCalendarId) REFERENCES Calendars(Id) ON DELETE CASCADE
-);
-
-DROP TABLE IF EXISTS ListingsCalendars CASCADE;
-CREATE TABLE ListingsCalendars (
-    Id INTEGER NOT NULL auto_increment,
-    ListingId INTEGER NOT NULL,
-    CalendarId INTEGER NOT NULL,
-
-    PRIMARY KEY(Id),
-    FOREIGN KEY (ListingId) REFERENCES Listings(Id) ON DELETE CASCADE,
-    FOREIGN KEY (CalendarId) REFERENCES Calendars(Id) ON DELETE CASCADE
 );
 
 DROP TABLE IF EXISTS Amenitycategories CASCADE;
@@ -217,8 +204,8 @@ CREATE TABLE Amenities (
     FOREIGN KEY (AmenitycategoryId) REFERENCES Amenitycategories(Id) ON DELETE CASCADE
 );
 
-DROP TABLE IF EXISTS ListingAmenities CASCADE;
-CREATE TABLE ListingAmenities (
+DROP TABLE IF EXISTS ListingsAmenities CASCADE;
+CREATE TABLE ListingsAmenities (
     Id INTEGER NOT NULL auto_increment,
     ListingId INTEGER NOT NULL,
     AmenityId INTEGER NOT NULL,
