@@ -1,22 +1,25 @@
 package jdbc;
+
 import java.sql.Date;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Scanner;
 
+import dbobjects.Creditcard;
+import dbobjects.Renter;
 import dbobjects.User;
 
 public class View {
-	
+
 	// fields in View represent our active state
 	public String viewName;
 	public User loggedInUser = null;
 	public SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-	
+
 	public View(String viewName) {
 		this.viewName = viewName;
 	}
-	
+
 	public void printMenu() {
 		if (loggedInUser == null) {
 			System.out.print("Not logged in: ");
@@ -40,17 +43,24 @@ public class View {
 			System.out.println("5. Admin Panel");
 			System.out.println("6. Become a renter");
 			System.out.println("7. Become a lister");
-			System.out.print("Choose one of the previous options [0-7]: ");
+			System.out.println("8. Back to login screen");
+			System.out.print("Choose one of the previous options [0-8]: ");
 		} else if (this.viewName == "LISTINGSCREEN") {
 			System.out.println("TODO: LISTINGSCREEN NOT IMPLEMENTED YET");
-		} else if (this.viewName == "LISTINGSCREEN") {
-			System.out.println("TODO: LISTINGSCREEN NOT IMPLEMENTED YET");
+		} else if (this.viewName == "BOOKINGSSCREEN") {
+			System.out.println("TODO: BOOKINGS SCREEN NOT IMPLEMENTED YET");
+		} else if (this.viewName == "BECOMEARENTERSCREEN") {
+			System.out.println("=========BECOME A RENTER SCREEN=========");
+			System.out.println("0. Exit.");
+			System.out.println("1. Become a renter");
+			System.out.println("2. Back to main screen");
+			System.out.print("Choose one of the previous options [0-2]: ");
 		}
 	}
-	
+
 	public String choiceAction(int choice, Scanner sc, DAO dao) {
 		if (this.viewName == "INITIALSCREEN") {
-			switch (choice) { //Activate the desired functionality
+			switch (choice) { // Activate the desired functionality
 			case 1:
 				// log into existing
 				System.out.print("Enter an email address: ");
@@ -69,25 +79,25 @@ public class View {
 				System.out.print("Enter SIN: ");
 				String input = sc.nextLine();
 				tempUser.UserSIN = Integer.parseInt(input);
-				
+
 				System.out.print("Enter Email: ");
 				tempUser.Email = sc.nextLine();
-				
+
 				System.out.print("Enter FirstName: ");
 				tempUser.FirstName = sc.nextLine();
-				
+
 				System.out.print("Enter LastName: ");
 				tempUser.LastName = sc.nextLine();
-				
+
 				System.out.print("Enter Occupation: ");
 				tempUser.Occupation = sc.nextLine();
-				
+
 				System.out.print("Enter Address: ");
 				tempUser.Address = sc.nextLine();
-				
+
 				System.out.print("Enter City: ");
 				tempUser.City = sc.nextLine();
-				
+
 				System.out.print("Enter DOB in YYYY-MM-DD: ");
 				input = sc.nextLine();
 				if (input != null && input.trim().length() > 0) {
@@ -105,7 +115,7 @@ public class View {
 					input = sc.nextLine();
 				}
 				tempUser.CountryId = dao.getCountryIdByCountryName(input.trim());
-				
+
 				tempUser.printUser();
 				if (dao.addUser(tempUser)) {
 					System.out.println("User successfully added.");
@@ -123,7 +133,7 @@ public class View {
 			}
 			return "MAINSCREEN";
 		} else if (this.viewName == "MAINSCREEN") {
-			switch (choice) { //Activate the desired functionality
+			switch (choice) { // Activate the desired functionality
 			case 1:
 				// log in screen
 				return "INITIALSCREEN";
@@ -160,20 +170,84 @@ public class View {
 				break;
 			case 6:
 				// Become a renter
-				// Go straight to the admin panel - forgot to add extra permissions in DB, would
-				// probably have added this as a separate flag in users, or as a different kind
-				// of user
-
-				break;
+				// let the 'become a renter' screen handle not logged in users
+				return "BECOMEARENTERSCREEN";
 			case 7:
 				// become a lister
+				break;
 				
+			case 8:
+				// go back to initial screen - where user can log out.
+				return "INITIALSCREEN";
 			default:
 				break;
 			}
 			return "MAINSCREEN";
+		} else if (this.viewName == "BECOMEARENTERSCREEN") {
+			switch (choice) { // Activate the desired functionality
+			case 1:
+				// become a renter -> ensure logged in, and ensure not a renter already then ask
+				// for prompts.
+				Renter tempRenter = null;
+				Creditcard tempCard = null;
+				if (this.loggedInUser != null && !dao.isUserARenter(this.loggedInUser.UserSIN)) {
+					tempCard = new Creditcard();
+
+					// add a credit card first					
+					System.out.print("Enter a credit card number: ");
+					String input = sc.nextLine();
+					tempCard.CardNumber = input.trim();
+					
+					System.out.print("Enter the card's expiry date YYYY-MM-DD: ");
+					input = sc.nextLine();
+					if (input != null && input.trim().length() > 0) {
+						try {
+							java.util.Date parsed = dateFormat.parse(input);
+							tempCard.ExpiryDate = new java.sql.Date(parsed.getTime());
+						} catch (ParseException e) {
+							e.printStackTrace();
+						}
+					}
+					
+					System.out.print("Enter the card holder's name: ");
+					input = sc.nextLine();
+					tempCard.AccountHolderName = input.trim();
+					
+					// save this card to the DB.
+					if (dao.addCreditcard(tempCard)) {
+						System.out.println("Card added successfully");
+						
+						// using this credit card, add the renter.
+						tempRenter = new Renter(
+								tempCard.CardNumber,
+								this.loggedInUser.UserSIN
+								);
+						if (dao.addRenter(tempRenter)) {
+							System.out.println("Account successfully set as renter");
+							return "MAINSCREEN";
+						} else {
+							System.out.println("error setting as renter");
+						}
+					} else {
+						System.out.println("error adding credit card");
+					}
+
+				} else if (this.loggedInUser == null) {
+					System.out.println("Log into a user first to become a renter");
+					return "INITIALSCREEN";
+				} else {
+					System.out.println("User is already a renter");
+					return "MAINSCREEN";
+				}
+			case 2:
+				// Go back to main screen
+				return "MAINSCREEN";
+			default:
+				break;
+			}
+			// go back to mainscreen when done everything
+			return "MAINSCREEN";
 		}
 		return "";
 	}
-
 }

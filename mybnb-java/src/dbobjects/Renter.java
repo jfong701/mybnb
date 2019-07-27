@@ -6,8 +6,15 @@ public class Renter {
 	public String CreditcardNumber;
 	public int userSIN;
 	
+	// when creating renters from DB info
 	public Renter(int id, String creditcardNumber, int userSIN) {
 		Id = id;
+		CreditcardNumber = creditcardNumber;
+		this.userSIN = userSIN;
+	}
+	
+	// When making a renter to add to the DB.
+	public Renter(String creditcardNumber, int userSIN) {
 		CreditcardNumber = creditcardNumber;
 		this.userSIN = userSIN;
 	}

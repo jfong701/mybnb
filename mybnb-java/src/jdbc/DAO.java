@@ -7,6 +7,7 @@ import java.time.LocalDate;
 
 import javax.sql.rowset.CachedRowSet;
 
+import dbobjects.Creditcard;
 import dbobjects.Lister;
 import dbobjects.Renter;
 import dbobjects.User;
@@ -23,6 +24,14 @@ public class DAO {
 	
 	public void endDAO() {
 		db.disconnect();
+	}
+	
+	/*/
+	 * Adds single quotes around a string
+	 * (Looks cleaner than "'" everywhere.
+	 */
+	private String q(Object toQuote) {
+		return "'" + toQuote + "'"; 
 	}
 	
 	public void PrintResultSetOutput(ResultSet rs) {
@@ -73,6 +82,39 @@ public class DAO {
 				+ "'" + user.City + "'" + ", "
 				+ "'" + user.DOB + "'" + ", "
 				+ user.CountryId + ");";
+		System.out.println(query);
+		try {
+			db.executeUpdate(query);
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+	
+	public boolean addCreditcard(Creditcard cc) {
+		String query = "INSERT INTO Creditcards(CardNumber, ExpiryDate, AccountHolderName) "
+				+ "VALUES ("
+				+ q(cc.CardNumber) + ", "
+				+ q(cc.ExpiryDate) + ", "
+				+ q(cc.AccountHolderName) + ");";
+		System.out.println(query);
+		try {
+			db.executeUpdate(query);
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+	
+	public boolean addRenter(Renter renter) {
+		String query = "INSERT INTO Renters(CreditcardNumber, userSIN) "
+				+ "VALUES ("
+				+ q(renter.CreditcardNumber) + ", "
+				+ renter.userSIN + ");";
 		System.out.println(query);
 		try {
 			db.executeUpdate(query);
