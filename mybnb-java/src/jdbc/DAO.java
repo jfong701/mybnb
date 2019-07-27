@@ -7,6 +7,8 @@ import java.time.LocalDate;
 
 import javax.sql.rowset.CachedRowSet;
 
+import dbobjects.Lister;
+import dbobjects.Renter;
 import dbobjects.User;
 
 public class DAO {
@@ -106,6 +108,44 @@ public class DAO {
 			e.printStackTrace();
 		}
 		return user;
+	}
+	
+	public Lister getListerByUserSIN(int userSIN) {
+		String query = "SELECT * FROM Listers WHERE userSIN = " + userSIN + ";";
+		CachedRowSet rs = null;
+		Lister lister = null;
+		try {
+			rs = db.execute(query);
+			if (rs.first()) {
+				lister = new Lister(
+					rs.getInt("Id"),
+					rs.getString("PaypalEmail"),
+					rs.getInt("userSIN")
+				);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return lister;
+	}
+	
+	public Renter getRenterByUserSIN(int userSIN) {
+		String query = "SELECT * FROM Renters WHERE userSIN = " + userSIN + ";";
+		CachedRowSet rs = null;
+		Renter renter = null;
+		try {
+			rs = db.execute(query);
+			if (rs.first()) {
+				renter = new Renter(
+					rs.getInt("Id"),
+					rs.getString("CreditcardNumber"),
+					rs.getInt("userSIN")
+				);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return renter;
 	}
 
 	// returns -1 if not a valid country

@@ -21,7 +21,7 @@ public class View {
 		if (loggedInUser == null) {
 			System.out.print("Not logged in: ");
 		} else {
-			System.out.print("Logged in: (" + loggedInUser.FirstName + ")");
+			System.out.print("(" + loggedInUser.FirstName + " " + loggedInUser.LastName + ")");
 		}
 		if (this.viewName == "INITIALSCREEN") {
 			System.out.println("=========INITIAL SCREEN=========");
@@ -30,6 +30,19 @@ public class View {
 			System.out.println("2. Register as a new user");
 			System.out.println("3. Proceed as guest");
 			System.out.print("Choose one of the previous options [0-3]: ");
+		} else if (this.viewName == "MAINSCREEN") {
+			System.out.println("=========MAIN SCREEN=========");
+			System.out.println("0. Exit.");
+			System.out.println("1. Log in to an existing user");
+			System.out.println("2. Search for listings");
+			System.out.println("3. View your listings (listers only)");
+			System.out.println("4. View your bookings (renters only)");
+			System.out.println("5. Admin Panel");
+			System.out.println("6. Become a renter");
+			System.out.println("7. Become a lister");
+			System.out.print("Choose one of the previous options [0-5]: ");
+		} else if (this.viewName == "LISTINGSCREEN") {
+			System.out.println("TODO: LISTINGSCREEN NOT IMPLEMENTED YET");
 		}
 	}
 	
@@ -102,12 +115,44 @@ public class View {
 			case 3:
 				// log in as guest
 				loggedInUser = null;
-				;
 				break;
 			default:
 				break;
 			}
-			return "INITIALSCREEN";
+			return "MAINSCREEN";
+		} else if (this.viewName == "MAINSCREEN") {
+			switch (choice) { //Activate the desired functionality
+			case 1:
+				// log in screen
+				return "INITIALSCREEN";
+			case 2:
+				// Search screen
+				return "SEARCHSCREEN";
+			case 3:
+				// View your listings
+				// check if logged in + user is a lister
+				if (this.loggedInUser == null) {
+					System.out.println("You are not currently logged in. Please log in to see your listings.");
+				} else if (dao.getListerByUserSIN(this.loggedInUser.UserSIN) == null) {
+					System.out.println("You are logged in, but not a lister. Please become a lister first.");
+				} else {
+					return "LISTINGSCREEN";
+				}
+				break;
+			case 4:
+				// View your bookings
+				// check if logged in + user is a renter (if they have no bookings, say they have no bookings)
+				break;
+			case 5:
+				// Go straight to the admin panel - forgot to add extra permissions in DB, would
+				// probably have added this as a separate flag in users, or as a different kind
+				// of user
+
+				break;
+			default:
+				break;
+			}
+			return "MAINSCREEN";
 		}
 		return "";
 	}

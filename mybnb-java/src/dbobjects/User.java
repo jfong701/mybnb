@@ -2,8 +2,6 @@ package dbobjects;
 
 import java.sql.Date;
 import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 public class User {
 
@@ -31,7 +29,7 @@ public class User {
 		Occupation = occupation;
 		Address = address;
 		City = city;
-		DOB = DOB;
+		DOB = dOB;
 		CreatedAt = createdAt;
 		LastLoggedInAt = lastLoggedInAt;
 		CountryId = countryId;
