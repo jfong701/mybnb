@@ -4,18 +4,21 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.ArrayList;
 
 import javax.sql.rowset.CachedRowSet;
 
 import dbobjects.Creditcard;
 import dbobjects.Lister;
+import dbobjects.Listing;
 import dbobjects.Paypal;
 import dbobjects.Renter;
+import dbobjects.RoomType;
 import dbobjects.User;
 
 public class DAO {
 	
-	private MySqlConnection db;
+	private static MySqlConnection db;
 	public static final int INVALID_ID = -1;
 	
 	public DAO() throws SQLException {
@@ -214,6 +217,24 @@ public class DAO {
 		return lister;
 	}
 	
+	public String getListerNameByListerId(int id) {
+		String query = "SELECT CONCAT(Users.FirstName, ' ', Users.LastName) "
+				+ "AS FullName FROM Listers "
+				+ "LEFT JOIN Users on Listers.UserSIN =  Users.UserSIN "
+				+ "WHERE Listers.Id = " + id + ";";
+		CachedRowSet rs = null;
+		String fullName = null;
+		try {
+			rs = db.execute(query);
+			if (rs.first()) {
+				fullName = rs.getString("FullName");
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return fullName;
+	}
+	
 	public Renter getRenterByUserSIN(int userSIN) {
 		String query = "SELECT * FROM Renters WHERE userSIN = " + userSIN + ";";
 		CachedRowSet rs = null;
@@ -231,6 +252,25 @@ public class DAO {
 			e.printStackTrace();
 		}
 		return renter;
+	}
+	
+	public RoomType getRoomTypeById(int id) {
+		String query = "SELECT * FROM RoomTypes WHERE Id = " + id + ";";
+		CachedRowSet rs = null;
+		RoomType roomtype = null;
+		try {
+			rs = db.execute(query);
+			if (rs.first()) {
+				roomtype = new RoomType(
+					rs.getInt("Id"),
+					rs.getString("RoomtypeName"),
+					rs.getString("RoomtypeDescription")
+				);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return roomtype;
 	}
 	
 	public boolean isUserALister(int userSIN) {
@@ -263,6 +303,21 @@ public class DAO {
 		return returnId;
 	}
 	
+	public String getCountryNameById(int id) {
+		String query = "SELECT CountryName FROM Countries WHERE Id = " + id + ";";
+		String returnVal = null;
+		CachedRowSet rs = null;
+		try {
+			rs = db.execute(query);
+			if (rs.first()) {
+				returnVal = rs.getString("CountryName");
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return returnVal;
+	}
+	
 
 	public CachedRowSet getAllAmenities() {
 		CachedRowSet result = null;
@@ -274,6 +329,51 @@ public class DAO {
 		}
 		return result;
 	}
+	
+	public ArrayList<Listing> getListingsCustomSearch(Search search) {
+		String query = "SELECT *";
+		if (search.inLatitude >= -180 && search.inLongitude >= -180) {
+			query += ",haversine(Latitude, Longitude, " + search.inLatitude + ", " + search.inLongitude + ") AS Distance";
+		}
+		query += " FROM Listings "
+				+ "WHERE " + search.getAllConditionsString() + ";";
+		CachedRowSet rs = null;
+		ArrayList<Listing> listings = null;
+		if (Main.debug) {
+			System.out.println(query);
+		}
+		try {
+			rs = db.execute(query);
+			listings = new ArrayList<Listing>();
+			while (rs.next()) {
+				listings.add(rsToListing(rs));
+			}
+		} catch (SQLException e){
+			e.printStackTrace();
+		}
+		return listings;
+	}
+	
+	public Listing getListingById(int id) {
+		String query = "SELECT * FROM Listings WHERE Id = " + id;
+		CachedRowSet rs = null;
+		Listing listing = null;
+		if (Main.debug) {
+			System.out.println(query);
+		}
+		try {
+			rs = db.execute(query);
+			listing = new Listing();
+			if (rs.first()) {
+				listing = rsToListing(rs);
+			}
+		} catch (SQLException e){
+			e.printStackTrace();
+		}
+		return listing;
+	}
+	
+	
 	
 	public CachedRowSet getListingsWithinRadius(double lati, double longi, double searchRadiusKm){
 		double earthRadius = 6378.1;
@@ -289,7 +389,7 @@ public class DAO {
 				+ "(RADIANS( " + longi + ") - "
 				+ "RADIANS(Longitude))/2)"
 				+ ",2)"
-				+ "))) > " + searchRadiusKm + ";";
+				+ "))) < " + searchRadiusKm + ";";
 		CachedRowSet result = null;
 		try {
 			result = db.execute(query);
@@ -317,5 +417,37 @@ public class DAO {
 		return result;
 	}
 	
+	// converts an extracted resultset to a Listing object
+	public Listing rsToListing(ResultSet rs) throws SQLException {
+		Listing l = new Listing(
+				rs.getInt("Id"),
+				rs.getString("Title"),
+				rs.getString("ListingDescription"),
+				rs.getDouble("BasePrice"),
+				rs.getDouble("Latitude"),
+				rs.getDouble("Longitude"),
+				rs.getString("City"),
+				rs.getString("PostalCode"),
+				rs.getString("Address"),
+				rs.getTime("CheckInTime"),
+				rs.getTime("CheckOutTime"),
+				rs.getInt("MaxNumGuests"),
+				rs.getInt("CountryId"),
+				rs.getInt("RoomTypeId"),
+				rs.getInt("ListerId")
+				);
+		
+		// only fill in distance if it exists in the output
+		try {
+			l.DistanceFromSearch = rs.getDouble("Distance");
+		} catch(SQLException e) {
+			if (Main.debug) {
+				System.out.println("swallowed the exception");
+			}
+		}
+
+		l.fillDecorative(this);
+		return l;
+	}
 
 }

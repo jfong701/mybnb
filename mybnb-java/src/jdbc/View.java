@@ -3,10 +3,12 @@ package jdbc;
 import java.sql.Date;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 import dbobjects.Creditcard;
 import dbobjects.Lister;
+import dbobjects.Listing;
 import dbobjects.Paypal;
 import dbobjects.Renter;
 import dbobjects.User;
@@ -16,6 +18,7 @@ public class View {
 	// fields in View represent our active state
 	public String viewName;
 	public User loggedInUser = null;
+	public Search search = new Search();
 	public SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
 	public View(String viewName) {
@@ -28,14 +31,14 @@ public class View {
 		} else {
 			System.out.print("(" + loggedInUser.FirstName + " " + loggedInUser.LastName + ")");
 		}
-		if (this.viewName == "INITIALSCREEN") {
+		if (this.viewName.equals("INITIALSCREEN")) {
 			System.out.println("=========INITIAL SCREEN=========");
 			System.out.println("0. Exit.");
 			System.out.println("1. Log in to an existing user");
 			System.out.println("2. Register as a new user");
 			System.out.println("3. Proceed as guest");
 			System.out.print("Choose one of the previous options [0-3]: ");
-		} else if (this.viewName == "MAINSCREEN") {
+		} else if (this.viewName.equals("MAINSCREEN")) {
 			System.out.println("=========MAIN SCREEN=========");
 			System.out.println("0. Exit.");
 			System.out.println("1. Log in to an existing user");
@@ -47,22 +50,30 @@ public class View {
 			System.out.println("7. Become a lister");
 			System.out.println("8. Back to login screen");
 			System.out.print("Choose one of the previous options [0-8]: ");
-		} else if (this.viewName == "LISTINGSCREEN") {
+		} else if (this.viewName.equals("LISTINGSCREEN")) {
 			System.out.println("TODO: LISTINGSCREEN NOT IMPLEMENTED YET");
 		} else if (this.viewName == "BOOKINGSSCREEN") {
 			System.out.println("TODO: BOOKINGS SCREEN NOT IMPLEMENTED YET");
-		} else if (this.viewName == "BECOMEARENTERSCREEN") {
+		} else if (this.viewName.equals("BECOMEARENTERSCREEN")) {
 			System.out.println("=========BECOME A RENTER SCREEN=========");
 			System.out.println("0. Exit.");
 			System.out.println("1. Become a renter");
 			System.out.println("2. Back to main screen");
 			System.out.print("Choose one of the previous options [0-2]: ");
-		} else if (this.viewName == "BECOMEALISTERSCREEN") {
+		} else if (this.viewName.equals("BECOMEALISTERSCREEN")) {
 			System.out.println("=========BECOME A LISTER SCREEN=========");
 			System.out.println("0. Exit.");
 			System.out.println("1. Become a lister");
 			System.out.println("2. Back to main screen");
 			System.out.print("Choose one of the previous options [0-2]: ");
+		} else if (this.viewName.equals("SEARCHOPTIONSSCREEN")) {
+			System.out.println("=========SEARCH OPTIONS SCREEN=========");
+			System.out.println("0. Exit.");
+			System.out.println("1. Search by location");
+			System.out.println("2. Search by postal code");
+			System.out.println("3. Search by adddress");
+			System.out.println("4. Back to main screen");
+			System.out.print("Choose one of the previous options [0-4]: ");
 		}
 	}
 
@@ -147,7 +158,7 @@ public class View {
 				return "INITIALSCREEN";
 			case 2:
 				// Search screen
-				return "SEARCHSCREEN";
+				return "SEARCHOPTIONSSCREEN";
 			case 3:
 				// View your listings
 				// only allowed if logged in, and a lister.
@@ -308,7 +319,54 @@ public class View {
 			}
 			// go back to mainscreen when done everything
 			return "MAINSCREEN";
+		} else if (this.viewName == "SEARCHOPTIONSSCREEN") {
+			switch (choice) {
+			case 1:
+				// search by location
+				System.out.print("Enter the latitude of a location to start searching from: ");
+				String input = sc.nextLine();
+				double latitude = Double.parseDouble(input);
+				
+				System.out.print("Enter the longitude of a location to start searching from: ");
+				input = sc.nextLine();
+				double longitude = Double.parseDouble(input);
+				
+				System.out.print("Enter a searchRadius in km: ");
+				input = sc.nextLine();
+				double searchRadius = Double.parseDouble(input);
+
+				search.addCondition(search.generateLocationSearchCond(latitude, longitude, searchRadius));
+				search.searchResult = dao.getListingsCustomSearch(search);
+				System.out.println("SEARCH RESULTS:");
+				for (Listing l : search.searchResult) {
+					l.printListingSmallFlat();
+				}
+				System.out.println("Type the id of a Listing to view its full details");
+				input = sc.nextLine();
+				int id = Integer.parseInt(input);
+				Listing l = dao.getListingById(id);
+				System.out.println("Full listing details: ");
+				l.printListingFull();
+//				ArrayList<Listing>l = dao.getListingsCustomSearch(search);
+//				for(Listing li : l) {
+//					li.printListingSmall();
+//				}
+				return "SEARCHOPTIONSSCREEN";
+			case 2:
+				// search by postal code
+				break;
+			case 3:
+				// search by address
+				break;
+			case 4:
+				// back to main screen
+				return "MAINSCREEN";
+			default:
+				break;
+			}
+			return "SEARCHOPTIONSSCREEN";
 		}
 		return "";
 	}
+
 }

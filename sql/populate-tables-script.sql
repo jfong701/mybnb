@@ -194,4 +194,4 @@ COMMIT;
 --     FIELDS TERMINATED BY '\t'
 --     IGNORE 1 LINES;
 -- SELECT * FROM Users
-
+-- select Haversine(45.560314, -73.547223, 45.559848, -73.547545);
