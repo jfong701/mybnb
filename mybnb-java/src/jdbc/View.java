@@ -72,14 +72,15 @@ public class View {
 			System.out.println("0. Exit.");
 			System.out.println("1. Search by location");
 			System.out.println("2. Search by postal code");
-			System.out.println("3. Search by adddress");
-			System.out.println("4. Back to main screen");
-			System.out.print("Choose one of the previous options [0-4]: ");
+			System.out.println("3. Search by address");
+			System.out.println("4. Search by city");
+			System.out.println("5. Back to main screen");
+			System.out.print("Choose one of the previous options [0-5]: ");
 		} else if (this.viewName.equals("SEARCHOPTIONSSCREEN2")) {
 			System.out.println("=========SEARCH OPTIONS SCREEN (refinements) =========");
 			System.out.println("0. Exit.");
-			System.out.println("1. Refine search with dates available");
-			System.out.println("2. Continue");
+			System.out.println("1. Refine search with dates units are available");
+			System.out.println("2. No more filters, show me what's there");
 			System.out.print("Choose one of the previous options [0-2]: ");
 		}
 	}
@@ -353,26 +354,25 @@ public class View {
 			case 2:
 				// search by postal code
 				System.out.print("Enter the starting part of a postal code to start searching for: ");
-				input = sc.nextLine();
+				input = sc.nextLine().trim();
 				search.addCondition(search.generatePostalCodeSearchCond(input));
 				search.searchResult = dao.getListingsCustomSearch(search);
-				for (Listing li : search.searchResult) {
-					li.printListingSmallFlat();
-				}
-				System.out.println("Type the id of a Listing to view its full details - type 0 to go back to SEARCH");
-				input = sc.nextLine();
-				int id2 = Integer.parseInt(input);
-				if (id2 == 0) {
-					return "SEARCHOPTIONSSCREEN";
-				}
-				Listing li = dao.getListingById(id2);
-				System.out.println("Full listing details: ");
-				li.printListingFull();
-				break;
+				return "SEARCHOPTIONSSCREEN2";
 			case 3:
-				// search by address
-				break;
+				// search by exact address
+				System.out.print("Enter an exact address to search for: ");
+				input = sc.nextLine().trim();
+				search.addCondition(search.generateExactAddressSearchCond(input));
+				search.searchResult = dao.getListingsCustomSearch(search);
+				return "SEARCHOPTIONSSCREEN2";
 			case 4:
+				// search by city name
+				System.out.print("Enter a city name: ");
+				input = sc.nextLine().trim();
+				search.addCondition(search.generateCitySearchCond(input));
+				search.searchResult = dao.getListingsCustomSearch(search);
+				return "SEARCHOPTIONSSCREEN2";
+			case 5:
 				// back to main screen
 				return "MAINSCREEN";
 			default:
@@ -428,7 +428,7 @@ public class View {
 				
 				// OUTPUT THE SEARCH RESULTS
 				
-				System.out.println("SEARCH RESULTS:");
+				System.out.println("!!! SEARCH RESULTS: !!!");
 				if (search.searchResult.size() == 0) {
 					System.out.println("0 results meet the filter criteria");
 				} else {

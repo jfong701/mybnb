@@ -40,8 +40,27 @@ public class Search {
 		return clause;
 	}
 	
+	/*
+	 * Postal code search matches any substring that starts with the same givenInput
+	 */
 	public String generatePostalCodeSearchCond(String postalCodeStarting) {
 		String clause = "PostalCode LIKE '" + postalCodeStarting + "%'";
+		return clause;
+	}
+	
+	/*
+	 * Address search matches exact address only (not case sensitive)
+	 */
+	public String generateExactAddressSearchCond(String address) {
+		String clause = "Address = '" + address + "'";
+		return clause;
+	}
+	
+	/*
+	 * Address search matches exact City name only (not case sensitive)
+	 */
+	public String generateCitySearchCond(String cityName) {
+		String clause = "City = '" + cityName + "'";
 		return clause;
 	}
 	
