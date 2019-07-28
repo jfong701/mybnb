@@ -38,7 +38,7 @@ public class DAO {
 	 * (Looks cleaner than "'" everywhere.
 	 */
 	private String q(Object toQuote) {
-		return "'" + toQuote + "'"; 
+		return "'" + toQuote.toString().replaceAll("'", "''") + "'"; 
 	}
 	
 	public void PrintResultSetOutput(ResultSet rs) {
@@ -175,6 +175,74 @@ public class DAO {
 		return true;
 	}
 	
+	public boolean addListingAndAmenities(Listing listing, List<String> amenityIds) {
+
+		String query1 = "INSERT INTO LISTINGS(Title, ListingDescription, BasePrice,"
+				+ "Latitude, Longitude, City, PostalCode, Address, CheckInTime,"
+				+ "CheckOutTime, MaxNumGuests, CountryId, RoomTypeId, ListerId) "
+				+ "VALUES ("
+				+ q(listing.Title) + ", "
+				+ q(listing.ListingDescription) + ", "
+				+ listing.BasePrice + ", "
+				+ listing.Latitude + ", "
+				+ listing.Longitude + ", "
+				+ q(listing.City) + ", "
+				+ q(listing.PostalCode) + ", "
+				+ q(listing.Address) + ", "
+				+ q(listing.CheckInTime) + ", "
+				+ q(listing.CheckOutTime) + ", "
+				+ listing.MaxNumGuests + ", "
+				+ listing.CountryId + ", "
+				+ listing.RoomTypeId + ", "
+				+ listing.ListerId + ");";
+		
+		String query2 = "SELECT Id from Listings ORDER BY Id DESC LIMIT 1;";
+		
+		String query3 = "INSERT INTO ListingsAmenities(ListingId, AmenityId)";
+		
+		String formattedValues = "VALUES";
+		
+		if (Main.debug) { System.out.println(query1); System.out.println(query2);}
+		try {
+			// updating multiple tables, make sure all updates succeed
+			db.openTransaction();
+			db.executeUpdate(query1);
+			
+			CachedRowSet rs;
+			rs = db.execute(query2);
+			int newListingId = 0;
+			if (rs.next()) {
+				newListingId = rs.getInt("Id");
+			}
+			if (newListingId == 0) {
+				db.rollbackTransaction();
+			} else {
+				for (int i = 0; i < amenityIds.size(); i++) {
+					formattedValues += "(" + newListingId + ", " + amenityIds.get(i) + ")";
+					if (i < amenityIds.size() - 1) {
+						formattedValues += ", ";
+					}
+				}
+				query3 += formattedValues + ";";
+				
+				if (Main.debug) {System.out.println(query3);}
+				
+				db.executeUpdate(query3);
+				db.commitTransaction();
+			}
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+			try {
+				db.rollbackTransaction();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+			return false;
+		}
+		return true;
+	}
+	
 	public User getUserByEmail(String email) {
 		String query = "SELECT * FROM Users WHERE Email = '" + email + "'";
 		CachedRowSet rs = null;
@@ -282,19 +350,33 @@ public class DAO {
 		String query = "SELECT * FROM RoomTypes WHERE Id = " + id + ";";
 		CachedRowSet rs = null;
 		RoomType roomtype = null;
+		if (Main.debug) {System.out.println(query);}
 		try {
 			rs = db.execute(query);
 			if (rs.first()) {
-				roomtype = new RoomType(
-					rs.getInt("Id"),
-					rs.getString("RoomtypeName"),
-					rs.getString("RoomtypeDescription")
-				);
+				roomtype = rsToRoomType(rs);
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 		return roomtype;
+	}
+	
+	public ArrayList<RoomType> getRoomTypes() {
+		String query = "SELECT * FROM RoomTypes;";
+		CachedRowSet rs = null;
+		ArrayList<RoomType> roomtypes = null;
+		if (Main.debug) {System.out.println(query);}
+		try {
+			rs = db.execute(query);
+			roomtypes = new ArrayList<RoomType>();
+			while (rs.next()) {
+				roomtypes.add(rsToRoomType(rs));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return roomtypes;
 	}
 	
 	public boolean isUserALister(int userSIN) {
@@ -599,6 +681,16 @@ public class DAO {
 			);
 		
 		return a;
+	}
+	
+	// converts an extracted resultset to a RoomType object
+	public RoomType rsToRoomType(ResultSet rs) throws SQLException {
+		RoomType r = new RoomType(
+				rs.getInt("Id"),
+				rs.getString("RoomtypeName"),
+				rs.getString("RoomtypeDescription")
+			);
+		return r;
 	}
 
 }

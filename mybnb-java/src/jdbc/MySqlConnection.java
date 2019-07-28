@@ -88,6 +88,20 @@ public class MySqlConnection {
 			e.printStackTrace();
 		}
 	}
+	
+	public void openTransaction() throws SQLException {
+		conn.setAutoCommit(false);
+	}
+	
+	public void commitTransaction() throws SQLException {
+		conn.commit();
+		conn.setAutoCommit(true);
+	}
+	
+	public void rollbackTransaction() throws SQLException {
+		conn.rollback();
+		conn.setAutoCommit(true);
+	}
 
 	/*
 	 * Generic function to execute a prepared statement Used for INSERT INTO

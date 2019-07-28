@@ -25,6 +25,7 @@ public class Listing {
 	
 	// decoration properties (retrieved FK for country, roomtype, lister)
 	public String CountryName, RoomTypeName, ListerName;
+	public RoomType RoomType;
 	public List<Amenity> Amenities;
 	
 	
@@ -92,7 +93,7 @@ public class Listing {
 		System.out.println("CheckOutTime: " + CheckOutTime);
 		System.out.println("MaxNumGuests: " + MaxNumGuests);
 		System.out.println("CountryName: " + CountryName);
-		System.out.println("RoomType: " + RoomTypeName);
+		System.out.println("RoomType: " + RoomType.RoomtypeName);
 		System.out.println("ListerName: " + ListerName);
 		if (DistanceFromSearch != 0) {
 			System.out.println("Distance: (km)" + DistanceFromSearch);
@@ -109,7 +110,7 @@ public class Listing {
 	
 	public void fillDecorative(DAO dao) {
 		this.CountryName = dao.getCountryNameById(this.CountryId);
-		this.RoomTypeName = dao.getRoomTypeById(this.RoomTypeId).RoomtypeName;
+		this.RoomType = dao.getRoomTypeById(this.RoomTypeId);
 		this.ListerName = dao.getListerNameByListerId(this.ListerId);
 		this.Amenities = dao.getListingAmenitesByListingId(this.Id);
 	}
