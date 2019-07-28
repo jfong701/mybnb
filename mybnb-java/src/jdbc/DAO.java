@@ -383,6 +383,23 @@ public class DAO {
 		return listings;
 	}
 	
+	public ArrayList<Listing> getListingsByListerId(int listerId) {
+		String query = "SELECT * FROM Listings WHERE ListerId = " + listerId + ";";
+		CachedRowSet rs = null;
+		ArrayList<Listing> listings = null;
+		if (Main.debug) { System.out.println(query); }
+		try {
+			rs = db.execute(query);
+			listings = new ArrayList<Listing>();
+			while (rs.next()) {
+				listings.add(rsToListing(rs));
+			}
+		} catch (SQLException e){
+			e.printStackTrace();
+		}
+		return listings;
+	}
+	
 	public Listing getListingById(int id) {
 		String query = "SELECT * FROM Listings WHERE Id = " + id;
 		CachedRowSet rs = null;

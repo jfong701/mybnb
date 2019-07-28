@@ -45,17 +45,19 @@ public class View {
 		} else if (this.viewName.equals("MAINSCREEN")) {
 			System.out.println("=========MAIN SCREEN=========");
 			System.out.println("0. Exit.");
-			System.out.println("1. Log in to an existing user");
+			System.out.println("1. Return to login screen");
 			System.out.println("2. Search for listings");
 			System.out.println("3. View your listings (listers only)");
 			System.out.println("4. View your bookings (renters only)");
 			System.out.println("5. Admin Panel");
 			System.out.println("6. Become a renter");
 			System.out.println("7. Become a lister");
-			System.out.println("8. Back to login screen");
 			System.out.print("Choose one of the previous options [0-8]: ");
-		} else if (this.viewName.equals("LISTINGSCREEN")) {
-			System.out.println("TODO: LISTINGSCREEN NOT IMPLEMENTED YET");
+		} else if (this.viewName.equals("MYLISTINGSSCREEN")) {
+			System.out.println("=========MY LISTINGS SCREEN=========");
+			System.out.println("0. Exit.");
+			System.out.println("1. See my listings");
+			System.out.println("2. Back to main screen");
 		} else if (this.viewName == "BOOKINGSSCREEN") {
 			System.out.println("TODO: BOOKINGS SCREEN NOT IMPLEMENTED YET");
 		} else if (this.viewName.equals("BECOMEARENTERSCREEN")) {
@@ -192,7 +194,7 @@ public class View {
 				} else if (!dao.isUserALister(this.loggedInUser.UserSIN)) {
 					System.out.println("You are logged in, but not a lister. Please become a lister first.");
 				} else {
-					return "LISTINGSCREEN";
+					return "MYLISTINGSSCREEN";
 				}
 				break;
 			case 4:
@@ -220,9 +222,6 @@ public class View {
 				// become a lister
 				// let the 'become a lister' screen handle not logged in users
 				return "BECOMEALISTERSCREEN";
-			case 8:
-				// go back to initial screen - where user can log out.
-				return "INITIALSCREEN";
 			default:
 				break;
 			}
@@ -505,7 +504,7 @@ public class View {
 						l.printListingSmallFlat();
 					}
 				}
-				System.out.println("Type the id of a Listing to view its full details - type 0 to go back to SEARCH");
+				System.out.println("Type the id of a Listing to view its full details - type 0 to go back to SEARCH SCREEN");
 				input = sc.nextLine();
 				int id = Integer.parseInt(input);
 				if (id == 0) {
@@ -516,6 +515,34 @@ public class View {
 				l.printListingFull();
 				return "SEARCHOPTIONSSCREEN";
 			}
+		} else if (this.viewName.equals("MYLISTINGSSCREEN")) {
+			switch(choice) {
+			case 1:
+				// view my listings
+				
+				// get all of the lister's listings
+				int listerId = dao.getListerByUserSIN(this.loggedInUser.UserSIN).Id;
+				ArrayList<Listing> listings = dao.getListingsByListerId(listerId);
+				
+				// print out the short form of all of them, ask them to choose one to see it in full details
+				for (Listing l : listings) {
+					l.printListingSmallFlat();
+				}	
+				
+				System.out.println("Type the id of a Listing to view its full details - type 0 to go back to SEARCH SCREEN");
+				input = sc.nextLine();
+				int id = Integer.parseInt(input);
+				if (id == 0) {
+					return "SEARCHOPTIONSSCREEN";
+				}
+				Listing l = dao.getListingById(id);
+				System.out.println("Full listing details: ");
+				l.printListingFull();
+				return "SEARCHOPTIONSSCREEN";				
+			default: 
+				break;
+			}
+			return "MYLISTINGSSCREEN";
 		}
 		return "";
 	}
