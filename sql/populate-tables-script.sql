@@ -136,7 +136,7 @@ INSERT INTO
 Listings(Title, ListingDescription, BasePrice, Latitude, Longitude, City, PostalCode, Address, CheckInTime, CheckOutTime, MaxNumGuests, CountryId, RoomTypeId, ListerId)
 VALUES('Beautiful home in the Gaslamp quarter.', 'Ideally located home close to transit, and historic sights, here is some other stuff', 245, 32.713173, -117.161085, 'San Diego', 'CA 92101', '700 Fourth Ave', '16:00', '10:00', 4, @UsaId, 1, 1),
 ('Private apartment in downtown.', 'Conveniently located close to downtown, close to many tourist attractions', 159, 32.719834, -117.165591, 'San Diego', 'CA 92101', '1300 Union St', '12:00', '10:00', 6, @UsaId, 1, 1),
-('Studio (prés du Métro)', '8 minute marche du métro Viau, à proximité se trouve le stade Olympique.', 48, 45.563018, -73.547782, 'Montréal', 'H1V 1A1', '2757 Rue Leclaire', '15:00', '11:00', 2, @CanadaId, 1, 1);
+('Studio (prés du Métro)', '8 minute marche du métro Viau, à proximité se trouve le stade Olympique.', 48, 45.563018, -73.547782, 'Montréal', 'H1V 1A1', '2757 Rue Leclaire', '15:00', '11:00', 2, @CanadaId, 1, (SELECT Id From Listers Where USERSIN = 15));
 
 -- add All the odd amenities to the listings, except listing 1, give it all the amenities
 INSERT INTO ListingsAmenities(ListingId, AmenityId)

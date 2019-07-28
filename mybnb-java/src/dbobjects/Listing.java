@@ -73,6 +73,7 @@ public class Listing {
 		if (DistanceFromSearch != 0) {
 			System.out.println("Distance in km: " + DistanceFromSearch);
 		}
+		System.out.println();
 	}
 	
 	public void printListingFull() {		

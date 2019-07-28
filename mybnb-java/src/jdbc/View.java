@@ -74,6 +74,12 @@ public class View {
 			System.out.println("3. Search by adddress");
 			System.out.println("4. Back to main screen");
 			System.out.print("Choose one of the previous options [0-4]: ");
+		} else if (this.viewName.equals("SEARCHOPTIONSSCREEN2")) {
+			System.out.println("=========SEARCH OPTIONS SCREEN (refinements) =========");
+			System.out.println("0. Exit.");
+			System.out.println("1. Refine search with dates available");
+			System.out.println("2. Continue");
+			System.out.print("Choose one of the previous options [0-2]: ");
 		}
 	}
 
@@ -320,11 +326,15 @@ public class View {
 			// go back to mainscreen when done everything
 			return "MAINSCREEN";
 		} else if (this.viewName == "SEARCHOPTIONSSCREEN") {
+			
+			// reset the search if there are any leftovers from the last search
+			search.resetSearch();
+			String input;
 			switch (choice) {
 			case 1:
 				// search by location
 				System.out.print("Enter the latitude of a location to start searching from: ");
-				String input = sc.nextLine();
+				input = sc.nextLine();
 				double latitude = Double.parseDouble(input);
 				
 				System.out.print("Enter the longitude of a location to start searching from: ");
@@ -341,19 +351,34 @@ public class View {
 				for (Listing l : search.searchResult) {
 					l.printListingSmallFlat();
 				}
-				System.out.println("Type the id of a Listing to view its full details");
+				System.out.println("Type the id of a Listing to view its full details - type 0 to go back to SEARCH");
 				input = sc.nextLine();
 				int id = Integer.parseInt(input);
+				if (id == 0) {
+					return "SEARCHOPTIONSSCREEN";
+				}
 				Listing l = dao.getListingById(id);
 				System.out.println("Full listing details: ");
 				l.printListingFull();
-//				ArrayList<Listing>l = dao.getListingsCustomSearch(search);
-//				for(Listing li : l) {
-//					li.printListingSmall();
-//				}
-				return "SEARCHOPTIONSSCREEN";
+				return "SEARCHOPTIONSSCREEN2";
 			case 2:
 				// search by postal code
+				System.out.print("Enter the starting part of a postal code to start searching for: ");
+				input = sc.nextLine();
+				search.addCondition(search.generatePostalCodeSearchCond(input));
+				search.searchResult = dao.getListingsCustomSearch(search);
+				for (Listing li : search.searchResult) {
+					li.printListingSmallFlat();
+				}
+				System.out.println("Type the id of a Listing to view its full details - type 0 to go back to SEARCH");
+				input = sc.nextLine();
+				id = Integer.parseInt(input);
+				if (id == 0) {
+					return "SEARCHOPTIONSSCREEN";
+				}
+				Listing li = dao.getListingById(id);
+				System.out.println("Full listing details: ");
+				li.printListingFull();
 				break;
 			case 3:
 				// search by address
@@ -365,6 +390,16 @@ public class View {
 				break;
 			}
 			return "SEARCHOPTIONSSCREEN";
+		} else if (this.viewName == "SEARCHOPTIONSSCREEN2") {
+			switch (choice) {
+			case 1:
+				// add the temporal filter (dates)
+				break;
+			case 2:
+				// continue without refining
+				break;
+			}
+			return "SEARCHOPTIONSSCREEN3";
 		}
 		return "";
 	}
