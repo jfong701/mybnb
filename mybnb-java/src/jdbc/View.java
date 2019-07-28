@@ -24,6 +24,7 @@ public class View {
 	public User loggedInUser = null;
 	public Search search = new Search();
 	public SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+	public SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mm");
 
 	public View(String viewName) {
 		this.viewName = viewName;
@@ -47,7 +48,7 @@ public class View {
 			System.out.println("0. Exit.");
 			System.out.println("1. Return to login screen");
 			System.out.println("2. Search for listings");
-			System.out.println("3. View your listings (listers only)");
+			System.out.println("3. View your listings or create a new one (listers only)");
 			System.out.println("4. View your bookings (renters only)");
 			System.out.println("5. Admin Panel");
 			System.out.println("6. Become a renter");
@@ -57,7 +58,9 @@ public class View {
 			System.out.println("=========MY LISTINGS SCREEN=========");
 			System.out.println("0. Exit.");
 			System.out.println("1. See my listings");
-			System.out.println("2. Back to main screen");
+			System.out.println("2. Create a new listing");
+			System.out.println("3. Back to main screen");
+			System.out.print("Choose one of the previous options [0-3]: ");
 		} else if (this.viewName == "BOOKINGSSCREEN") {
 			System.out.println("TODO: BOOKINGS SCREEN NOT IMPLEMENTED YET");
 		} else if (this.viewName.contentEquals("BECOMEARENTERSCREEN")) {
@@ -132,22 +135,22 @@ public class View {
 				tempUser.UserSIN = Integer.parseInt(input);
 
 				System.out.print("Enter Email: ");
-				tempUser.Email = sc.nextLine();
+				tempUser.Email = sc.nextLine().trim();
 
 				System.out.print("Enter FirstName: ");
-				tempUser.FirstName = sc.nextLine();
+				tempUser.FirstName = sc.nextLine().trim();
 
 				System.out.print("Enter LastName: ");
-				tempUser.LastName = sc.nextLine();
+				tempUser.LastName = sc.nextLine().trim();
 
 				System.out.print("Enter Occupation: ");
-				tempUser.Occupation = sc.nextLine();
+				tempUser.Occupation = sc.nextLine().trim();
 
 				System.out.print("Enter Address: ");
-				tempUser.Address = sc.nextLine();
+				tempUser.Address = sc.nextLine().trim();
 
 				System.out.print("Enter City: ");
-				tempUser.City = sc.nextLine();
+				tempUser.City = sc.nextLine().trim();
 
 				System.out.print("Enter DOB in YYYY-MM-DD: ");
 				input = sc.nextLine();
@@ -160,12 +163,12 @@ public class View {
 					}
 				}
 				System.out.print("Enter Country: ");
-				input = sc.nextLine();
-				while (dao.getCountryIdByCountryName(input.trim()) == dao.INVALID_ID) {
+				input = sc.nextLine().trim();
+				while (dao.getCountryIdByCountryName(input) == dao.INVALID_ID) {
 					System.out.println("Please enter a valid country:");
-					input = sc.nextLine();
+					input = sc.nextLine().trim();
 				}
-				tempUser.CountryId = dao.getCountryIdByCountryName(input.trim());
+				tempUser.CountryId = dao.getCountryIdByCountryName(input);
 
 				tempUser.printUser();
 				if (dao.addUser(tempUser)) {
@@ -529,7 +532,93 @@ public class View {
 				for (Listing l : listings) {
 					l.printListingSmallFlat();
 				}
-				return "INDIVIDUALLISTINGSCREEN";		
+				return "INDIVIDUALLISTINGSCREEN";
+				
+			case 2:
+				// Create a new listing
+				// see how registration is done.
+				System.out.println("Please follow the prompts to enter data for the new listing.");
+				Listing tempListing = new Listing();
+				
+				System.out.print("Enter Title: ");
+				tempListing.Title = sc.nextLine().trim();
+				
+				System.out.print("Enter Listing Description: ");
+				tempListing.ListingDescription = sc.nextLine().trim();
+				
+				System.out.print("Enter a Base Price: ");
+				input = sc.nextLine().trim();
+				tempListing.BasePrice = Double.parseDouble(input);
+				
+				System.out.print("Enter Latitude: ");
+				input = sc.nextLine().trim();
+				tempListing.Latitude = Double.parseDouble(input);
+				
+				System.out.print("Enter Longitude: ");
+				input = sc.nextLine().trim();
+				tempListing.Longitude = Double.parseDouble(input);
+				
+				System.out.print("Enter City: ");
+				tempListing.City = sc.nextLine().trim();
+				
+				System.out.print("Enter Postal Code: ");
+				tempListing.PostalCode = sc.nextLine().trim();
+				
+				System.out.print("Enter Address: ");
+				tempListing.Address = sc.nextLine().trim();
+				
+				System.out.print("Enter check in time (in 24 hour notation) (hh:mm): ");
+				input = sc.nextLine().trim();
+				if (input != null && input.trim().length() > 0) {
+					try {
+						java.util.Date parsed = timeFormat.parse(input);
+						tempListing.CheckInTime = new java.sql.Time(parsed.getTime());
+					} catch (ParseException e) {
+						e.printStackTrace();
+					}
+				}
+				
+				System.out.print("Enter check out time (in 24 hour notation) (hh:mm): ");
+				input = sc.nextLine().trim();
+				if (input != null && input.trim().length() > 0) {
+					try {
+						java.util.Date parsed = timeFormat.parse(input);
+						tempListing.CheckOutTime = new java.sql.Time(parsed.getTime());
+					} catch (ParseException e) {
+						e.printStackTrace();
+					}
+				}
+				
+				System.out.print("Enter max number of guests that the unit should allow: ");
+				input = sc.nextLine().trim();
+				tempListing.MaxNumGuests = Integer.parseInt(input);
+				
+				System.out.print("Enter Country: ");
+				input = sc.nextLine().trim();
+				while (dao.getCountryIdByCountryName(input) == dao.INVALID_ID) {
+					System.out.println("Please enter a valid country:");
+					input = sc.nextLine().trim();
+				}
+				tempListing.CountryId = dao.getCountryIdByCountryName(input);
+				
+				
+				System.out.println("Enter the Id that best matches your room type:");
+				// print all the types available
+				dao.getRoomTypes().forEach(a -> a.printRoomTypeFlatFriendly());
+				
+				// let user enter an Id (if they enter the wrong one, let the database send an error about FK constraints
+				input = sc.nextLine().trim();
+				tempListing.RoomTypeId = Integer.parseInt(input);
+				
+				// to be able to access this screen, the current user must be a lister, so dig up their listerId
+				tempListing.ListerId = dao.getListerByUserSIN(this.loggedInUser.UserSIN).Id;
+				
+				if (dao.addListing(tempListing)) {
+					System.out.println("Listing successfully added");
+				} else {
+					System.out.println("Error adding listing");
+				}
+				
 			default: 
 				break;
 			}
