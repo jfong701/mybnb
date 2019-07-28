@@ -35,14 +35,14 @@ public class View {
 		} else {
 			System.out.print("(" + loggedInUser.FirstName + " " + loggedInUser.LastName + ")");
 		}
-		if (this.viewName.equals("INITIALSCREEN")) {
+		if (this.viewName.contentEquals("INITIALSCREEN")) {
 			System.out.println("=========INITIAL SCREEN=========");
 			System.out.println("0. Exit.");
 			System.out.println("1. Log in to an existing user");
 			System.out.println("2. Register as a new user");
 			System.out.println("3. Proceed as guest");
 			System.out.print("Choose one of the previous options [0-3]: ");
-		} else if (this.viewName.equals("MAINSCREEN")) {
+		} else if (this.viewName.contentEquals("MAINSCREEN")) {
 			System.out.println("=========MAIN SCREEN=========");
 			System.out.println("0. Exit.");
 			System.out.println("1. Return to login screen");
@@ -53,26 +53,26 @@ public class View {
 			System.out.println("6. Become a renter");
 			System.out.println("7. Become a lister");
 			System.out.print("Choose one of the previous options [0-8]: ");
-		} else if (this.viewName.equals("MYLISTINGSSCREEN")) {
+		} else if (this.viewName.contentEquals("MYLISTINGSSCREEN")) {
 			System.out.println("=========MY LISTINGS SCREEN=========");
 			System.out.println("0. Exit.");
 			System.out.println("1. See my listings");
 			System.out.println("2. Back to main screen");
 		} else if (this.viewName == "BOOKINGSSCREEN") {
 			System.out.println("TODO: BOOKINGS SCREEN NOT IMPLEMENTED YET");
-		} else if (this.viewName.equals("BECOMEARENTERSCREEN")) {
+		} else if (this.viewName.contentEquals("BECOMEARENTERSCREEN")) {
 			System.out.println("=========BECOME A RENTER SCREEN=========");
 			System.out.println("0. Exit.");
 			System.out.println("1. Become a renter");
 			System.out.println("2. Back to main screen");
 			System.out.print("Choose one of the previous options [0-2]: ");
-		} else if (this.viewName.equals("BECOMEALISTERSCREEN")) {
+		} else if (this.viewName.contentEquals("BECOMEALISTERSCREEN")) {
 			System.out.println("=========BECOME A LISTER SCREEN=========");
 			System.out.println("0. Exit.");
 			System.out.println("1. Become a lister");
 			System.out.println("2. Back to main screen");
 			System.out.print("Choose one of the previous options [0-2]: ");
-		} else if (this.viewName.equals("SEARCHOPTIONSSCREEN")) {
+		} else if (this.viewName.contentEquals("SEARCHOPTIONSSCREEN")) {
 			System.out.println("=========SEARCH OPTIONS SCREEN=========");
 			System.out.println("0. Exit.");
 			System.out.println("1. Search by location");
@@ -81,13 +81,13 @@ public class View {
 			System.out.println("4. Search by city");
 			System.out.println("5. Back to main screen");
 			System.out.print("Choose one of the previous options [0-5]: ");
-		} else if (this.viewName.equals("SEARCHOPTIONSSCREEN2")) {
+		} else if (this.viewName.contentEquals("SEARCHOPTIONSSCREEN2")) {
 			System.out.println("=========SEARCH OPTIONS SCREEN (refinements) =========");
 			System.out.println("0. Exit.");
 			System.out.println("1. Refine search with dates units are available");
 			System.out.println("2. See more filters");
 			System.out.print("Choose one of the previous options [0-2]: ");
-		} else if (this.viewName.equals("SEARCHOPTIONSSCREEN3")) {
+		} else if (this.viewName.contentEquals("SEARCHOPTIONSSCREEN3")) {
 			System.out.println("=========SEARCH OPTIONS SCREEN (refinements) =========");
 			System.out.println("0. Exit.");
 			System.out.println("1. Set a maximum price per night");
@@ -99,12 +99,18 @@ public class View {
 			System.out.println("1. Require certain amenities");
 			System.out.println("2. No more filtering, see results!");
 			System.out.print("Choose one of the previous options [0-2]: ");
+		} else if (this.viewName.contentEquals("INDIVIDUALLISTINGSCREEN")) {
+			System.out.println("=========SEARCH OPTIONS SCREEN (refinements) =========");
+			System.out.println("-1. Back to Main Screen.");
+			System.out.println("0. Exit.");
+			System.out.println("Or type the id of the listing you want to view.");
+			System.out.print("Choose one of the previous options [-1-n]: ");
 		}
 	}
 
 	public String choiceAction(int choice, Scanner sc, DAO dao) {
 		String input = null;
-		if (this.viewName.equals("INITIALSCREEN")) {
+		if (this.viewName.contentEquals("INITIALSCREEN")) {
 			switch (choice) { // Activate the desired functionality
 			case 1:
 				// log into existing
@@ -178,7 +184,7 @@ public class View {
 				break;
 			}
 			return "MAINSCREEN";
-		} else if (this.viewName.equals("MAINSCREEN")) {
+		} else if (this.viewName.contentEquals("MAINSCREEN")) {
 			switch (choice) { // Activate the desired functionality
 			case 1:
 				// log in screen
@@ -226,7 +232,7 @@ public class View {
 				break;
 			}
 			return "MAINSCREEN";
-		} else if (this.viewName.equals("BECOMEARENTERSCREEN")) {
+		} else if (this.viewName.contentEquals("BECOMEARENTERSCREEN")) {
 			switch (choice) { // Activate the desired functionality
 			case 1:
 				// become a renter -> ensure logged in, and ensure not a renter already then ask
@@ -290,7 +296,7 @@ public class View {
 			}
 			// go back to mainscreen when done everything
 			return "MAINSCREEN";
-		} else if (this.viewName.equals("BECOMEALISTERSCREEN")) {
+		} else if (this.viewName.contentEquals("BECOMEALISTERSCREEN")) {
 			switch (choice) {
 			case 1:
 				// become a lister -> ensure logged in, and ensure not a lister already then ask
@@ -343,7 +349,7 @@ public class View {
 			}
 			// go back to mainscreen when done everything
 			return "MAINSCREEN";
-		} else if (this.viewName.equals("SEARCHOPTIONSSCREEN")) {
+		} else if (this.viewName.contentEquals("SEARCHOPTIONSSCREEN")) {
 			
 			// reset the search if there are any leftovers from the last search
 			search.resetSearch();
@@ -393,7 +399,7 @@ public class View {
 				break;
 			}
 			return "SEARCHOPTIONSSCREEN";
-		} else if (this.viewName.equals("SEARCHOPTIONSSCREEN2")) {
+		} else if (this.viewName.contentEquals("SEARCHOPTIONSSCREEN2")) {
 			switch (choice) {
 			case 1:
 				// add the temporal filter (dates)
@@ -446,7 +452,7 @@ public class View {
 				break;
 			}
 			return "SEARCHOPTIONSSCREEN";
-		} else if (this.viewName.equals("SEARCHOPTIONSSCREEN3")) {
+		} else if (this.viewName.contentEquals("SEARCHOPTIONSSCREEN3")) {
 			switch(choice) {
 			case 1:
 				// Set a max price limit on any listings
@@ -467,7 +473,7 @@ public class View {
 			default:
 				return "SEARCHOPTIONSSCREEN4";
 			}
-		} else if (this.viewName.equals("SEARCHOPTIONSSCREEN4")) {
+		} else if (this.viewName.contentEquals("SEARCHOPTIONSSCREEN4")) {
 			switch(choice) {
 			case 1:
 				// Show the amenities, and take in a comma separated list of them.
@@ -493,29 +499,23 @@ public class View {
 						.filter(a -> listingIds.contains(a.Id))
 						.collect(Collectors.toList());
 			default:
-				
-				// OUTPUT THE SEARCH RESULTS
-				
-				System.out.println("!!! SEARCH RESULTS: !!!");
-				if (search.searchResult.size() == 0) {
-					System.out.println("0 results meet the filter criteria");
-				} else {
-					for (Listing l : search.searchResult) {
-						l.printListingSmallFlat();
-					}
-				}
-				System.out.println("Type the id of a Listing to view its full details - type 0 to go back to SEARCH SCREEN");
-				input = sc.nextLine();
-				int id = Integer.parseInt(input);
-				if (id == 0) {
-					return "SEARCHOPTIONSSCREEN";
-				}
-				Listing l = dao.getListingById(id);
-				System.out.println("Full listing details: ");
-				l.printListingFull();
-				return "SEARCHOPTIONSSCREEN";
+				break;
 			}
-		} else if (this.viewName.equals("MYLISTINGSSCREEN")) {
+			
+			// (note code, is outside the switch. This is always executed.)
+			// OUTPUT THE SEARCH RESULTS
+			
+			System.out.println("!!! SEARCH RESULTS: !!!");
+			if (search.searchResult.size() == 0) {
+				System.out.println("0 results meet the filter criteria");
+			} else {
+				for (Listing l : search.searchResult) {
+					l.printListingSmallFlat();
+				}
+			}
+			return "INDIVIDUALLISTINGSCREEN";
+			
+		} else if (this.viewName.contentEquals("MYLISTINGSSCREEN")) {
 			switch(choice) {
 			case 1:
 				// view my listings
@@ -524,25 +524,28 @@ public class View {
 				int listerId = dao.getListerByUserSIN(this.loggedInUser.UserSIN).Id;
 				ArrayList<Listing> listings = dao.getListingsByListerId(listerId);
 				
+				System.out.println("!!! YOUR LISTINGS: !!!");
 				// print out the short form of all of them, ask them to choose one to see it in full details
 				for (Listing l : listings) {
 					l.printListingSmallFlat();
-				}	
-				
-				System.out.println("Type the id of a Listing to view its full details - type 0 to go back to SEARCH SCREEN");
-				input = sc.nextLine();
-				int id = Integer.parseInt(input);
-				if (id == 0) {
-					return "SEARCHOPTIONSSCREEN";
 				}
-				Listing l = dao.getListingById(id);
-				System.out.println("Full listing details: ");
-				l.printListingFull();
-				return "SEARCHOPTIONSSCREEN";				
+				return "INDIVIDUALLISTINGSCREEN";		
 			default: 
 				break;
 			}
 			return "MYLISTINGSSCREEN";
+		} else if (this.viewName.contentEquals("INDIVIDUALLISTINGSCREEN")) {
+			System.out.println("Type the id of a Listing to view its full details - type -1 to go back to MAIN SCREEN");
+			if (choice == -1) {
+				return "MAINSCREEN";
+			} else if (choice != 0) {
+				Listing l = dao.getListingById(choice);
+				System.out.println("Full listing details: ");
+				l.printListingFull();
+				return "MAINSCREEN";
+			}
+			
+			return "MAINSCREEN";
 		}
 		return "";
 	}
