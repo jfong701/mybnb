@@ -146,14 +146,25 @@ CREATE TABLE Payments (
 DROP TABLE IF EXISTS Bookings CASCADE;
 CREATE TABLE Bookings (
     Id INTEGER NOT NULL auto_increment,
+	Amount DECIMAL(19, 4) NOT NULL,
+    ProcessedOn DATETIME NOT NULL,
+    RefundedOn DATETIME,
+    PaypalEmail VARCHAR(320) NOT NULL,
+    CreditcardNumber VARCHAR(19) NOT NULL,
+	CancelledById INTEGER,
+    ListingId INTEGER NOT NULL,
     RenterId INTEGER NOT NULL,
-    PaymentId INTEGER NOT NULL,
-    CancelledById INTEGER NOT NULL,
 
     PRIMARY KEY(Id),
-    FOREIGN KEY (RenterId) REFERENCES Renters(Id) ON DELETE CASCADE,
-    FOREIGN KEY (PaymentId) REFERENCES Payments(Id) ON DELETE CASCADE,
-    FOREIGN KEY (CancelledById) REFERENCES Users(UserSIN) ON DELETE CASCADE
+	FOREIGN KEY (PaypalEmail) REFERENCES Paypals(Email) ON DELETE CASCADE,
+    FOREIGN KEY (CreditcardNumber) REFERENCES Creditcards(CardNumber) ON DELETE CASCADE,
+    FOREIGN KEY (CancelledById) REFERENCES Users(UserSIN) ON DELETE CASCADE,
+    FOREIGN KEY (ListingId) REFERENCES Listings(Id) ON DELETE CASCADE,
+	FOREIGN KEY (RenterId) REFERENCES Renters(Id) ON DELETE CASCADE,
+    
+    
+	-- ensure transaction amounts are not negative.
+    CHECK(Amount >= 0)
 );
 
 DROP TABLE IF EXISTS Calendars CASCADE;
@@ -171,30 +182,6 @@ CREATE TABLE Calendars (
 
     -- ensure prices are positive
     CHECK(Price >= 0)
-);
-
-DROP TABLE IF EXISTS BookingsCalendars CASCADE;
-CREATE TABLE BookingsCalendars (
-    Id INTEGER NOT NULL auto_increment,
-    BookingId INTEGER NOT NULL,
-    StartCalendarId INTEGER NOT NULL,
-    EndCalendarId INTEGER NOT NULL,
-
-    PRIMARY KEY(Id),
-    FOREIGN KEY (BookingId) REFERENCES Bookings(Id) ON DELETE CASCADE,
-    FOREIGN KEY (StartCalendarId) REFERENCES Calendars(Id) ON DELETE CASCADE,
-    FOREIGN KEY (EndCalendarId) REFERENCES Calendars(Id) ON DELETE CASCADE
-);
-
-DROP TABLE IF EXISTS ListingsCalendars CASCADE;
-CREATE TABLE ListingsCalendars (
-    Id INTEGER NOT NULL auto_increment,
-    ListingId INTEGER NOT NULL,
-    CalendarId INTEGER NOT NULL,
-
-    PRIMARY KEY(Id),
-    FOREIGN KEY (ListingId) REFERENCES Listings(Id) ON DELETE CASCADE,
-    FOREIGN KEY (CalendarId) REFERENCES Calendars(Id) ON DELETE CASCADE
 );
 
 DROP TABLE IF EXISTS Amenitycategories CASCADE;
@@ -217,8 +204,8 @@ CREATE TABLE Amenities (
     FOREIGN KEY (AmenitycategoryId) REFERENCES Amenitycategories(Id) ON DELETE CASCADE
 );
 
-DROP TABLE IF EXISTS ListingAmenities CASCADE;
-CREATE TABLE ListingAmenities (
+DROP TABLE IF EXISTS ListingsAmenities CASCADE;
+CREATE TABLE ListingsAmenities (
     Id INTEGER NOT NULL auto_increment,
     ListingId INTEGER NOT NULL,
     AmenityId INTEGER NOT NULL,
@@ -290,7 +277,7 @@ CREATE TABLE Renterratings (
 -- as a result, a lot of the time-based checks are done here
 
 -- Checking if Users are at least 18 to be added to Users
-delimiter |
+DELIMITER |
 CREATE TRIGGER dob_check BEFORE INSERT ON Users
     FOR EACH ROW
     BEGIN
@@ -299,10 +286,10 @@ CREATE TRIGGER dob_check BEFORE INSERT ON Users
         END IF;
     END
 |
-delimiter ;
+DELIMITER ;
 
 -- Checking if Credit Card used is not expired yet
-delimiter |
+DELIMITER |
 CREATE TRIGGER cc_expiry_check BEFORE INSERT ON Creditcards
     FOR EACH ROW
     BEGIN
@@ -311,13 +298,13 @@ CREATE TRIGGER cc_expiry_check BEFORE INSERT ON Creditcards
         END IF;
     END
 |
-delimiter ;
+DELIMITER ;
 
 -- ACTUAL TRIGGERS
 -- When a listing is created, Set it as available for the next 3 months for calendar entries.
 -- TODO WIP : ONLY creates one entry at the moment, will figure out how to make it loop, once it is tested on one entry
 SET @x = 0;
-delimiter |
+DELIMITER |
 CREATE TRIGGER generate_calendar_entries AFTER INSERT ON Listings
 	FOR EACH ROW
     BEGIN
@@ -328,4 +315,32 @@ CREATE TRIGGER generate_calendar_entries AFTER INSERT ON Listings
         SET @x = 0;
     END
 |
-delimiter ;
+DELIMITER ;
+
+DELIMITER |
+CREATE FUNCTION Haversine(LatitudeIn DECIMAL(9,6), LongitudeIn DECIMAL(9,6), LatitudeIn2 DECIMAL(9,6), LongitudeIn2 DECIMAL(9,6)) RETURNS DECIMAL(9,6) DETERMINISTIC
+BEGIN
+RETURN (2*6378.1
+	*ASIN(
+		SQRT(
+			POWER(
+				SIN(
+					(RADIANS(LatitudeIn) - RADIANS(LatitudeIn2))/2
+				)
+			,2)
+			+
+			COS(RADIANS(LatitudeIn2))
+			*
+			COS(RADIANS(LatitudeIn))
+			*
+			POWER(
+				SIN(
+					(RADIANS(LongitudeIn) - RADIANS(LongitudeIn2))/2
+				)
+			,2)
+		)
+	)
+);
+END
+|
+DELIMITER ;
