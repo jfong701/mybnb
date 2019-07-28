@@ -413,6 +413,27 @@ public class DAO {
 		return listingIds;
 	}
 	
+	public ArrayList<Integer> getListingIdsUnderMaxPrice(double maxPrice) {
+		
+		String query = "SELECT Id FROM Listings WHERE BasePrice <= " + maxPrice + ";";
+		
+		ArrayList<Integer> listingIds = null;
+		
+		if (Main.debug) {System.out.println(query);}
+		CachedRowSet rs = null;
+		try {
+			rs = db.execute(query);
+			listingIds = new ArrayList<Integer>();
+			while (rs.next()) {
+				listingIds.add(rs.getInt("Id"));
+			}
+		} catch (SQLException e){
+			e.printStackTrace();
+		}
+		
+		return listingIds;
+	}
+	
 	
 	
 	public CachedRowSet getListingsWithinRadius(double lati, double longi, double searchRadiusKm){

@@ -80,7 +80,13 @@ public class View {
 			System.out.println("=========SEARCH OPTIONS SCREEN (refinements) =========");
 			System.out.println("0. Exit.");
 			System.out.println("1. Refine search with dates units are available");
-			System.out.println("2. No more filters, show me what's there");
+			System.out.println("2. See more filters");
+			System.out.print("Choose one of the previous options [0-2]: ");
+		} else if (this.viewName.equals("SEARCHOPTIONSSCREEN3")) {
+			System.out.println("=========SEARCH OPTIONS SCREEN (refinements) =========");
+			System.out.println("0. Exit.");
+			System.out.println("1. Set a maximum price per night");
+			System.out.println("2. No more filtering, see results!");
 			System.out.print("Choose one of the previous options [0-2]: ");
 		}
 	}
@@ -418,12 +424,38 @@ public class View {
 					
 					// filter the previous results on this list of ids.
 					search.searchResult =
-					(ArrayList<Listing>) search.searchResult.stream()
-						.filter(listing -> listingIdsAvailable.contains(listing.Id))
+					search.searchResult.parallelStream()
+						.filter(l -> listingIdsAvailable.contains(l.Id))
 						.collect(Collectors.toList());
+					
+					// with the results narrowed down further, continue to next filter screen.
+					return "SEARCHOPTIONSSCREEN3";
 				}
 			case 2:
-				// continue without refining
+				// continue to next filter screen
+				return "SEARCHOPTIONSSCREEN3";
+			default:
+				break;
+			}
+			return "SEARCHOPTIONSSCREEN";
+		} else if (this.viewName == "SEARCHOPTIONSSCREEN3") {
+			switch(choice) {
+			case 1:
+				// Set a max price limit on any listings
+				System.out.print("In dollars, enter the highest you are willing to spend per night: ");
+				input = sc.nextLine();
+				
+				double maxPrice = Double.parseDouble(input.trim().replaceAll("$", ""));
+				
+				// get the listing Ids with prices below maxPrice
+				ArrayList<Integer> listingIds = dao.getListingIdsUnderMaxPrice(maxPrice);
+				
+				// filter the previous results with this list of ids
+				search.searchResult = search.searchResult.parallelStream()
+						.filter(l -> listingIds.contains(l.Id))
+						.collect(Collectors.toList());
+			case 2:
+				
 			default:
 				
 				// OUTPUT THE SEARCH RESULTS

@@ -1,6 +1,7 @@
 package jdbc;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.sql.Date;
 import dbobjects.Listing;
 
@@ -9,7 +10,7 @@ public class Search {
 	private ArrayList<String> conditions;
 	public double inLatitude = Double.NEGATIVE_INFINITY;
 	public double inLongitude = Double.NEGATIVE_INFINITY;
-	public ArrayList<Listing> searchResult;
+	public List<Listing> searchResult;
 	
 	public Search() {
 		this.resetSearch();
@@ -61,6 +62,11 @@ public class Search {
 	 */
 	public String generateCitySearchCond(String cityName) {
 		String clause = "City = '" + cityName + "'";
+		return clause;
+	}
+	
+	public String generateMaxPriceCond(double maxPrice) {
+		String clause = "BasePrice <= " + maxPrice;
 		return clause;
 	}
 	
