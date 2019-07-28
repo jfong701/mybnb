@@ -68,3 +68,7 @@ SELECT Id FROM Listings WHERE BasePrice <= @MaxPrice;
 -- DO COUNT TRICK
 SET @GivenAmentiesSearchCount = 3;
 SELECT ListingId FROM ListingsAmenities WHERE AmenityId IN (1, 2, 3) GROUP BY(ListingId) HAVING COUNT(*) = @GivenAmentiesSearchCount;
+
+-- Get all the amenities that belong to a listing.
+SET @WantedListing = 1;
+SELECT Amenities.Id, AmenityName, AmenityDescription, AmenitycategoryId FROM ListingsAmenities LEFT JOIN Amenities ON ListingsAmenities.AmenityId = Amenities.Id WHERE ListingId = @WantedListing;

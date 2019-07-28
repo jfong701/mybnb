@@ -238,6 +238,27 @@ public class DAO {
 		return fullName;
 	}
 	
+	
+	public ArrayList<Amenity> getListingAmenitesByListingId(int listingId) {
+		String query = "SELECT Amenities.Id, AmenityName, AmenityDescription, AmenitycategoryId "
+				+ "FROM ListingsAmenities LEFT JOIN Amenities "
+				+ "ON ListingsAmenities.AmenityId = Amenities.Id "
+				+ "WHERE ListingId = " + listingId + ";";
+		ArrayList<Amenity> amenities = null;
+		CachedRowSet rs = null;
+		if (Main.debug) { System.out.println(query); }
+		try {
+			amenities = new ArrayList<Amenity>();
+			rs = db.execute(query);
+			while(rs.next()) {
+				amenities.add(rsToAmenity(rs));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return amenities;
+	}
+	
 	public Renter getRenterByUserSIN(int userSIN) {
 		String query = "SELECT * FROM Renters WHERE userSIN = " + userSIN + ";";
 		CachedRowSet rs = null;

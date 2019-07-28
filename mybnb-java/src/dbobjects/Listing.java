@@ -1,6 +1,7 @@
 package dbobjects;
 
 import java.sql.Time;
+import java.util.List;
 
 import jdbc.DAO;
 
@@ -24,6 +25,7 @@ public class Listing {
 	
 	// decoration properties (retrieved FK for country, roomtype, lister)
 	public String CountryName, RoomTypeName, ListerName;
+	public List<Amenity> Amenities;
 	
 	
 	public Listing() {}
@@ -95,13 +97,21 @@ public class Listing {
 		if (DistanceFromSearch != 0) {
 			System.out.println("Distance: (km)" + DistanceFromSearch);
 		}
+		System.out.print("Amenities: ");
+		for (int i = 0; i < this.Amenities.size(); i++) {
+			System.out.print(this.Amenities.get(i).AmenityName);
+			if (i < this.Amenities.size() - 1) {
+				System.out.print(", ");
+			}
+		}
+		System.out.println();
 	}
 	
 	public void fillDecorative(DAO dao) {
-		System.out.println("looked up country name");
 		this.CountryName = dao.getCountryNameById(this.CountryId);
 		this.RoomTypeName = dao.getRoomTypeById(this.RoomTypeId).RoomtypeName;
 		this.ListerName = dao.getListerNameByListerId(this.ListerId);
+		this.Amenities = dao.getListingAmenitesByListingId(this.Id);
 	}
 
 }
