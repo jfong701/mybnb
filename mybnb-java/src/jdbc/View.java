@@ -5,6 +5,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 import dbobjects.Creditcard;
 import dbobjects.Lister;
@@ -84,6 +85,7 @@ public class View {
 	}
 
 	public String choiceAction(int choice, Scanner sc, DAO dao) {
+		String input = null;
 		if (this.viewName == "INITIALSCREEN") {
 			switch (choice) { // Activate the desired functionality
 			case 1:
@@ -102,7 +104,7 @@ public class View {
 				System.out.println("Welcome new user! Please enter the data at the prompts.");
 				User tempUser = new User();
 				System.out.print("Enter SIN: ");
-				String input = sc.nextLine();
+				input = sc.nextLine();
 				tempUser.UserSIN = Integer.parseInt(input);
 
 				System.out.print("Enter Email: ");
@@ -144,7 +146,8 @@ public class View {
 				tempUser.printUser();
 				if (dao.addUser(tempUser)) {
 					System.out.println("User successfully added.");
-					System.out.println("You are now logged in as: ");
+					System.out.println("Please choose option 1 on the next screento log in to your new account");
+					return "INITIALSCREEN";
 				} else {
 					System.out.println("Error adding user");
 				}
@@ -220,7 +223,7 @@ public class View {
 
 					// add a credit card first					
 					System.out.print("Enter a credit card number: ");
-					String input = sc.nextLine();
+					input = sc.nextLine();
 					tempCard.CardNumber = input.trim();
 					
 					System.out.print("Enter the card's expiry date YYYY-MM-DD: ");
@@ -284,7 +287,7 @@ public class View {
 
 					// add a credit card first					
 					System.out.print("Enter a Paypal email: ");
-					String input = sc.nextLine();
+					input = sc.nextLine();
 					tempPaypal.Email = input.trim();
 					
 					System.out.print("Enter the paypal account holder's name: ");
@@ -329,7 +332,6 @@ public class View {
 			
 			// reset the search if there are any leftovers from the last search
 			search.resetSearch();
-			String input;
 			switch (choice) {
 			case 1:
 				// search by location
@@ -347,19 +349,6 @@ public class View {
 
 				search.addCondition(search.generateLocationSearchCond(latitude, longitude, searchRadius));
 				search.searchResult = dao.getListingsCustomSearch(search);
-				System.out.println("SEARCH RESULTS:");
-				for (Listing l : search.searchResult) {
-					l.printListingSmallFlat();
-				}
-				System.out.println("Type the id of a Listing to view its full details - type 0 to go back to SEARCH");
-				input = sc.nextLine();
-				int id = Integer.parseInt(input);
-				if (id == 0) {
-					return "SEARCHOPTIONSSCREEN";
-				}
-				Listing l = dao.getListingById(id);
-				System.out.println("Full listing details: ");
-				l.printListingFull();
 				return "SEARCHOPTIONSSCREEN2";
 			case 2:
 				// search by postal code
@@ -372,11 +361,11 @@ public class View {
 				}
 				System.out.println("Type the id of a Listing to view its full details - type 0 to go back to SEARCH");
 				input = sc.nextLine();
-				id = Integer.parseInt(input);
-				if (id == 0) {
+				int id2 = Integer.parseInt(input);
+				if (id2 == 0) {
 					return "SEARCHOPTIONSSCREEN";
 				}
-				Listing li = dao.getListingById(id);
+				Listing li = dao.getListingById(id2);
 				System.out.println("Full listing details: ");
 				li.printListingFull();
 				break;
@@ -394,12 +383,70 @@ public class View {
 			switch (choice) {
 			case 1:
 				// add the temporal filter (dates)
-				break;
+				// we can assume there is an initial filter for location, so check db for listing Ids that are valid in this range
+				// and only keep listingIds that are valid in the time range and are present in the original search.
+				System.out.print("Enter the day you want to check IN in the form YYYY-MM-DD: ");
+				input = sc.nextLine();
+				Date CheckInDate = null; 
+				if (input != null && input.trim().length() > 0) {
+					try {
+						java.util.Date parsed = dateFormat.parse(input);
+						CheckInDate = new java.sql.Date(parsed.getTime());
+					} catch (ParseException e) {
+						e.printStackTrace();
+					}
+				}
+				
+				System.out.print("Enter the day you want to check OUT in the form YYYY-MM-DD: ");
+				input = sc.nextLine();
+				Date CheckOutDate = null; 
+				if (input != null && input.trim().length() > 0) {
+					try {
+						java.util.Date parsed = dateFormat.parse(input);
+						CheckOutDate = new java.sql.Date(parsed.getTime());
+					} catch (ParseException e) {
+						e.printStackTrace();
+					}
+				}
+				
+				if (CheckInDate.getTime() > CheckOutDate.getTime()) {
+					System.out.println("Error: Checkin date is after checkout date");
+					return "SEARCHOPTIONSSCREEN";
+				} else {
+					// get the listing Ids with dates available in this range
+					ArrayList<Integer> listingIdsAvailable = dao.getListingIdsAvailableByDateRange(CheckInDate, CheckOutDate);
+					
+					// filter the previous results on this list of ids.
+					search.searchResult =
+					(ArrayList<Listing>) search.searchResult.stream()
+						.filter(listing -> listingIdsAvailable.contains(listing.Id))
+						.collect(Collectors.toList());
+				}
 			case 2:
 				// continue without refining
-				break;
+			default:
+				
+				// OUTPUT THE SEARCH RESULTS
+				
+				System.out.println("SEARCH RESULTS:");
+				if (search.searchResult.size() == 0) {
+					System.out.println("0 results meet the filter criteria");
+				} else {
+					for (Listing l : search.searchResult) {
+						l.printListingSmallFlat();
+					}
+				}
+				System.out.println("Type the id of a Listing to view its full details - type 0 to go back to SEARCH");
+				input = sc.nextLine();
+				int id = Integer.parseInt(input);
+				if (id == 0) {
+					return "SEARCHOPTIONSSCREEN";
+				}
+				Listing l = dao.getListingById(id);
+				System.out.println("Full listing details: ");
+				l.printListingFull();
+				return "SEARCHOPTIONSSCREEN";
 			}
-			return "SEARCHOPTIONSSCREEN3";
 		}
 		return "";
 	}

@@ -1,5 +1,6 @@
 package jdbc;
 
+import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -371,6 +372,45 @@ public class DAO {
 			e.printStackTrace();
 		}
 		return listing;
+	}
+	
+	public ArrayList<Integer> getListingIdsAvailableByDateRange(Date checkInDate, Date checkOutDate) {
+		
+		// get number of days available needed
+		String query1 = "SELECT DATEDIFF(" + q(checkOutDate.toString()) + ", " + q(checkInDate.toString())  + ");";
+		int numDaysNeeded = 0;
+		if (Main.debug) {System.out.println(query1);}
+		CachedRowSet rs = null;
+		try {
+			rs = db.execute(query1);
+			if (rs.first()) {
+				numDaysNeeded = rs.getInt(1); // get value of first column
+			}
+		} catch (SQLException e){
+			e.printStackTrace();
+		}
+		
+		ArrayList<Integer> listingIds = null;
+		// get listing Ids that meet the criteria of number of days needed
+		String query2 = "SELECT COUNT(*) AS DaysAvailable, ListingId "
+				+ "FROM Calendars "
+				+ "WHERE IsAvailable = TRUE AND "
+				+ "DayOfStay BETWEEN " + q(checkInDate.toString()) + " AND SUBDATE(" + q(checkOutDate.toString()) + ", 1) "
+				+ "GROUP BY ListingId "
+				+ "HAVING DaysAvailable = " + numDaysNeeded + ";";
+		if (Main.debug) {System.out.println(query2);}
+		rs = null;
+		try {
+			rs = db.execute(query2);
+			listingIds = new ArrayList<Integer>();
+			while (rs.next()) {
+				listingIds.add(rs.getInt("ListingId"));
+			}
+		} catch (SQLException e){
+			e.printStackTrace();
+		}
+		
+		return listingIds;
 	}
 	
 	
