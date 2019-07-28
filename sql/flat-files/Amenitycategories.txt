@@ -1,0 +1,9 @@
+CategoryName
+Basic
+Family features
+Facilities
+Dining
+Guest access
+Logistics
+Bed and bath
+Safety features
