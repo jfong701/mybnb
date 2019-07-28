@@ -38,7 +38,7 @@ public class DAO {
 	 * (Looks cleaner than "'" everywhere.
 	 */
 	private String q(Object toQuote) {
-		return "'" + toQuote + "'"; 
+		return "'" + toQuote.toString().replaceAll("'", "''") + "'"; 
 	}
 	
 	public void PrintResultSetOutput(ResultSet rs) {
@@ -175,8 +175,9 @@ public class DAO {
 		return true;
 	}
 	
-	public boolean addListing(Listing listing) {
-		String query = "INSERT INTO LISTINGS(Title, ListingDescription, BasePrice,"
+	public boolean addListingAndAmenities(Listing listing, List<String> amenityIds) {
+
+		String query1 = "INSERT INTO LISTINGS(Title, ListingDescription, BasePrice,"
 				+ "Latitude, Longitude, City, PostalCode, Address, CheckInTime,"
 				+ "CheckOutTime, MaxNumGuests, CountryId, RoomTypeId, ListerId) "
 				+ "VALUES ("
@@ -194,12 +195,49 @@ public class DAO {
 				+ listing.CountryId + ", "
 				+ listing.RoomTypeId + ", "
 				+ listing.ListerId + ");";
-		if (Main.debug) { System.out.println(query); }
+		
+		String query2 = "SELECT Id from Listings ORDER BY Id DESC LIMIT 1;";
+		
+		String query3 = "INSERT INTO ListingsAmenities(ListingId, AmenityId)";
+		
+		String formattedValues = "VALUES";
+		
+		if (Main.debug) { System.out.println(query1); System.out.println(query2);}
 		try {
-			db.executeUpdate(query);
+			// updating multiple tables, make sure all updates succeed
+			db.openTransaction();
+			db.executeUpdate(query1);
+			
+			CachedRowSet rs;
+			rs = db.execute(query2);
+			int newListingId = 0;
+			if (rs.next()) {
+				newListingId = rs.getInt("Id");
+			}
+			if (newListingId == 0) {
+				db.rollbackTransaction();
+			} else {
+				for (int i = 0; i < amenityIds.size(); i++) {
+					formattedValues += "(" + newListingId + ", " + amenityIds.get(i) + ")";
+					if (i < amenityIds.size() - 1) {
+						formattedValues += ", ";
+					}
+				}
+				query3 += formattedValues + ";";
+				
+				if (Main.debug) {System.out.println(query3);}
+				
+				db.executeUpdate(query3);
+				db.commitTransaction();
+			}
 		}
 		catch (SQLException e) {
 			e.printStackTrace();
+			try {
+				db.rollbackTransaction();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
 			return false;
 		}
 		return true;

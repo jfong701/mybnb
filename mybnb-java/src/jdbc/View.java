@@ -613,11 +613,27 @@ public class View {
 				// to be able to access this screen, the current user must be a lister, so dig up their listerId
 				tempListing.ListerId = dao.getListerByUserSIN(this.loggedInUser.UserSIN).Id;
 				
-				if (dao.addListing(tempListing)) {
-					System.out.println("Listing successfully added");
+				// Show the amenities, and take in a comma separated list of them.
+				System.out.println("Available Amenities: ");
+				ArrayList<Amenity> amenities = dao.getAllAmenities();
+				for (Amenity a : amenities) {
+					System.out.println("Id: " + a.Id +", " + a.AmenityName);
+				}
+				
+				System.out.print("Enter a comma-separated list of the Amenity Ids that your unit contains: ");
+				input = sc.nextLine();
+				
+				// remove any duplicates before feeding amenity Ids to dao
+				List<String> amenityIdsIn = Arrays.stream(input.split(","))
+						.map(a -> a.trim())
+						.distinct()
+						.collect(Collectors.toList());
+				
+				if (dao.addListingAndAmenities(tempListing, amenityIdsIn)) {
+					System.out.println("Listing added");
 				} else {
 					System.out.println("Error adding listing");
-				}
+				}			
 				
 			default: 
 				break;
