@@ -6,9 +6,11 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.sql.rowset.CachedRowSet;
 
+import dbobjects.Amenity;
 import dbobjects.Creditcard;
 import dbobjects.Lister;
 import dbobjects.Listing;
@@ -320,15 +322,20 @@ public class DAO {
 	}
 	
 
-	public CachedRowSet getAllAmenities() {
-		CachedRowSet result = null;
+	public ArrayList<Amenity> getAllAmenities() {
+		ArrayList<Amenity> amenityList = null; 
+		CachedRowSet rs = null;
 		String query = "SELECT * FROM Amenities;";
 		try {
-			result = db.execute(query);
+			amenityList = new ArrayList<Amenity>();
+			rs = db.execute(query);
+			while(rs.next()) {
+				amenityList.add(rsToAmenity(rs));
+			}
 		} catch (SQLException e){
 			e.printStackTrace();
 		}
-		return result;
+		return amenityList;
 	}
 	
 	public ArrayList<Listing> getListingsCustomSearch(Search search) {
@@ -434,6 +441,43 @@ public class DAO {
 		return listingIds;
 	}
 	
+	public ArrayList<Integer> getListingIdsWithAllAmenities(List<String>amenityIds) {
+		
+		// format the list of ints as a string like (1, 2, 3, 5)
+		String formattedAmenityIds = "(";
+		for (int i = 0; i < amenityIds.size(); i++) {
+			formattedAmenityIds += amenityIds.get(i);
+			if (i < amenityIds.size() - 1) {
+				formattedAmenityIds += ", ";
+			}
+		}
+		formattedAmenityIds += ")";
+		
+		// returns only ListingIds which have everything
+		String query = "SELECT ListingId "
+				+ "FROM ListingsAmenities "
+				+ "WHERE AmenityId IN "
+				+ formattedAmenityIds + " "
+				+ "GROUP BY (ListingId) "
+				+ "HAVING COUNT(*) = "
+				+ amenityIds.size();
+		
+		ArrayList<Integer> listingIds = null;
+		
+		if (Main.debug) {System.out.println(query);}
+		CachedRowSet rs = null;
+		try {
+			rs = db.execute(query);
+			listingIds = new ArrayList<Integer>();
+			while (rs.next()) {
+				listingIds.add(rs.getInt("ListingId"));
+			}
+		} catch (SQLException e){
+			e.printStackTrace();
+		}
+		
+		return listingIds;
+	}
 	
 	
 	public CachedRowSet getListingsWithinRadius(double lati, double longi, double searchRadiusKm){
@@ -458,10 +502,6 @@ public class DAO {
 			e.printStackTrace();
 		}
 		return result;
-	}
-	
-	public CachedRowSet getListingsWithinRadiusAndAvailable(double lati, double longi, double searchRadiusKm, LocalDate checkInDate, LocalDate checkOutDate) {
-		return null;
 	}
 	
 	
@@ -509,6 +549,18 @@ public class DAO {
 
 		l.fillDecorative(this);
 		return l;
+	}
+	
+	// converts an extracted resultset to a Amenities object
+	public Amenity rsToAmenity(ResultSet rs) throws SQLException {
+		Amenity a = new Amenity(
+				rs.getInt("Id"),
+				rs.getString("AmenityName"),
+				rs.getString("AmenityDescription"),
+				rs.getInt("AmenitycategoryId")
+			);
+		
+		return a;
 	}
 
 }

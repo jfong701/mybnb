@@ -4,9 +4,12 @@ import java.sql.Date;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 import java.util.stream.Collectors;
 
+import dbobjects.Amenity;
 import dbobjects.Creditcard;
 import dbobjects.Lister;
 import dbobjects.Listing;
@@ -86,6 +89,12 @@ public class View {
 			System.out.println("=========SEARCH OPTIONS SCREEN (refinements) =========");
 			System.out.println("0. Exit.");
 			System.out.println("1. Set a maximum price per night");
+			System.out.println("2. See more filters");
+			System.out.print("Choose one of the previous options [0-2]: ");
+		} else if (this.viewName.contentEquals("SEARCHOPTIONSSCREEN4")) {
+			System.out.println("=========SEARCH OPTIONS SCREEN (refinements) =========");
+			System.out.println("0. Exit.");
+			System.out.println("1. Require certain amenities");
 			System.out.println("2. No more filtering, see results!");
 			System.out.print("Choose one of the previous options [0-2]: ");
 		}
@@ -93,7 +102,7 @@ public class View {
 
 	public String choiceAction(int choice, Scanner sc, DAO dao) {
 		String input = null;
-		if (this.viewName == "INITIALSCREEN") {
+		if (this.viewName.equals("INITIALSCREEN")) {
 			switch (choice) { // Activate the desired functionality
 			case 1:
 				// log into existing
@@ -167,7 +176,7 @@ public class View {
 				break;
 			}
 			return "MAINSCREEN";
-		} else if (this.viewName == "MAINSCREEN") {
+		} else if (this.viewName.equals("MAINSCREEN")) {
 			switch (choice) { // Activate the desired functionality
 			case 1:
 				// log in screen
@@ -218,7 +227,7 @@ public class View {
 				break;
 			}
 			return "MAINSCREEN";
-		} else if (this.viewName == "BECOMEARENTERSCREEN") {
+		} else if (this.viewName.equals("BECOMEARENTERSCREEN")) {
 			switch (choice) { // Activate the desired functionality
 			case 1:
 				// become a renter -> ensure logged in, and ensure not a renter already then ask
@@ -282,7 +291,7 @@ public class View {
 			}
 			// go back to mainscreen when done everything
 			return "MAINSCREEN";
-		} else if (this.viewName == "BECOMEALISTERSCREEN") {
+		} else if (this.viewName.equals("BECOMEALISTERSCREEN")) {
 			switch (choice) {
 			case 1:
 				// become a lister -> ensure logged in, and ensure not a lister already then ask
@@ -335,7 +344,7 @@ public class View {
 			}
 			// go back to mainscreen when done everything
 			return "MAINSCREEN";
-		} else if (this.viewName == "SEARCHOPTIONSSCREEN") {
+		} else if (this.viewName.equals("SEARCHOPTIONSSCREEN")) {
 			
 			// reset the search if there are any leftovers from the last search
 			search.resetSearch();
@@ -385,7 +394,7 @@ public class View {
 				break;
 			}
 			return "SEARCHOPTIONSSCREEN";
-		} else if (this.viewName == "SEARCHOPTIONSSCREEN2") {
+		} else if (this.viewName.equals("SEARCHOPTIONSSCREEN2")) {
 			switch (choice) {
 			case 1:
 				// add the temporal filter (dates)
@@ -438,7 +447,7 @@ public class View {
 				break;
 			}
 			return "SEARCHOPTIONSSCREEN";
-		} else if (this.viewName == "SEARCHOPTIONSSCREEN3") {
+		} else if (this.viewName.equals("SEARCHOPTIONSSCREEN3")) {
 			switch(choice) {
 			case 1:
 				// Set a max price limit on any listings
@@ -452,10 +461,38 @@ public class View {
 				
 				// filter the previous results with this list of ids
 				search.searchResult = search.searchResult.parallelStream()
-						.filter(l -> listingIds.contains(l.Id))
+						.filter(a -> listingIds.contains(a.Id))
 						.collect(Collectors.toList());
 			case 2:
 				
+			default:
+				return "SEARCHOPTIONSSCREEN4";
+			}
+		} else if (this.viewName.equals("SEARCHOPTIONSSCREEN4")) {
+			switch(choice) {
+			case 1:
+				// Show the amenities, and take in a comma separated list of them.
+				System.out.println("Available Amenities: ");
+				ArrayList<Amenity> amenities = dao.getAllAmenities();
+				for (Amenity a : amenities) {
+					System.out.println("Id: " + a.Id +", " + a.AmenityName);
+				}
+
+				System.out.print("Enter a comma-separated list of the Amenity Ids that you require: ");
+				input = sc.nextLine();
+				
+				// remove any duplicates before feeding amenity Ids to dao
+				List<String> amenityIdsIn = Arrays.stream(input.split(","))
+						.map(a -> a.trim())
+						.distinct()
+						.collect(Collectors.toList());
+				
+				List<Integer> listingIds = dao.getListingIdsWithAllAmenities(amenityIdsIn); 
+				
+				// filter the search result with these listingIds.
+				search.searchResult = search.searchResult.parallelStream()
+						.filter(a -> listingIds.contains(a.Id))
+						.collect(Collectors.toList());
 			default:
 				
 				// OUTPUT THE SEARCH RESULTS
