@@ -64,3 +64,19 @@ COMMIT;
 
 
 select * from bookings;
+
+-- --------------------------------------
+-- total number of bookings in a date range by city
+SET @C = 'Montreal';
+SET @StartDate = '2019-07-29';
+SET @EndDate = '2019-07-31';
+
+SELECT COUNT(DISTINCT BookingId) FROM Calendars WHERE BookingId IS NOT NULL AND DayOfStay = @StartDate OR DayOfStay = @EndDate;
+
+--  ------
+-- total number of listings per country
+SET @C = 'Montreal';
+SELECT COUNT(*) FROM Listings Where City = @C;
+
+-- Rank hosts by number of listings per city
+SELECT ListerId,count(*),City FROM Listings Where City = @C Group By ListerId Order By ListerId ;
