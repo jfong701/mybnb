@@ -6,7 +6,7 @@ LOAD DATA
     IGNORE 1 LINES
 	(CountryName)
 	SET ID = NULL;
-select * from countries;
+-- select * from countries;
 
 -- Amenitycategories (always the same)
 LOAD DATA
@@ -16,7 +16,7 @@ LOAD DATA
     IGNORE 1 LINES
 	(CategoryName)
 	SET ID = NULL;
-select * from Amenitycategories;
+-- select * from Amenitycategories;
 
 -- Amenities (always the same), linked to Amenitycategories
 -- --------------------------------------------------------------------------------------------------------

@@ -49,8 +49,8 @@ public class View {
 			System.out.println("1. Return to login screen");
 			System.out.println("2. Search for listings");
 			System.out.println("3. View your listings or create a new one (listers only)");
-			System.out.println("4. View your bookings (renters only)");
-			System.out.println("5. Admin Panel");
+			System.out.println("4. View your bookings (renters only)"); // did not finish implementing this in Java, see the SQL code in QUERIES-TO-ADD-TO-JAVA
+			System.out.println("5. Admin Panel (NOT IMPLEMENTED)");
 			System.out.println("6. Become a renter");
 			System.out.println("7. Become a lister");
 			System.out.print("Choose one of the previous options [0-8]: ");
@@ -108,6 +108,12 @@ public class View {
 			System.out.println("0. Exit.");
 			System.out.println("Or type the id of the listing you want to view.");
 			System.out.print("Choose one of the previous options [-1-n]: ");
+		} else if (this.viewName.contentEquals("BOOKINGSCREEN")) {
+			System.out.println("=========BOOKING SCREEN =========");
+			System.out.println("0. Exit.");
+			System.out.println("1. See your bookings");
+			System.out.println("2. Back to Main Screen.");
+			System.out.print("Choose one of the previous options [0-2]: ");
 		}
 	}
 
@@ -651,6 +657,16 @@ public class View {
 			}
 			
 			return "MAINSCREEN";
+		} else if (this.viewName.contentEquals("BOOKINGSCREEN")) {
+			switch (choice) {
+			case 1:
+				System.out.println("Bookings you have made: ");
+				dao.getBookingsByRenterId(dao.getRenterByUserSIN(this.loggedInUser.UserSIN).Id).forEach(a -> a.printBookingFlat());	
+				return "MAINSCREEN";
+			case 2:
+				return "MAINSCREEN";
+			}
+			return "BOOKINGSCREEN";
 		}
 		return "";
 	}

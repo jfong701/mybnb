@@ -11,6 +11,7 @@ import java.util.List;
 import javax.sql.rowset.CachedRowSet;
 
 import dbobjects.Amenity;
+import dbobjects.Booking;
 import dbobjects.Creditcard;
 import dbobjects.Lister;
 import dbobjects.Listing;
@@ -325,6 +326,23 @@ public class DAO {
 			e.printStackTrace();
 		}
 		return amenities;
+	}
+	
+	public ArrayList<Booking> getBookingsByRenterId(int renterId) {
+		String query = "SELECT * FROM BOOKINGS WHERE RenterId = " + renterId + ";";
+		ArrayList<Booking> bookings = null;
+		CachedRowSet rs = null;
+		if (Main.debug) { System.out.println(query);}
+		try {
+			bookings = new ArrayList<Booking>();
+			rs = db.execute(query);
+			while (rs.next()) {
+				bookings.add(rsToBooking(rs));
+			}
+		} catch(SQLException e) {
+			e.printStackTrace();
+		}
+		return bookings;
 	}
 	
 	public Renter getRenterByUserSIN(int userSIN) {
@@ -691,6 +709,22 @@ public class DAO {
 				rs.getString("RoomtypeDescription")
 			);
 		return r;
+	}
+	
+	// converts an extracted resultset to a Booking object
+	public Booking rsToBooking(ResultSet rs) throws SQLException {
+		Booking b = new Booking(
+				rs.getInt("Id"),
+				rs.getDouble("Amount"),
+				rs.getTimestamp("ProcessedOn"),
+				rs.getTimestamp("RefundedOn"),
+				rs.getString("PaypalEmail"),
+				rs.getString("CreditcardNumber"),
+				rs.getInt("CancelledById"),
+				rs.getInt("ListingId"),
+				rs.getInt("RenterId")
+			);
+		return b;
 	}
 
 }

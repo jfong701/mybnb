@@ -3,9 +3,8 @@
 
 -- Given a listingId, a RenterId, A check in date, and a checkout date, add a new booking if the calendar allows it.
 START TRANSACTION;
-SET @ListingId = 1;
 SET @RenterId = 1;
-SET @ListingId = 1;
+SET @ListingId = 2;
 SET @CheckInDate = CURDATE();
 Set @CheckOutDate = ADDDATE(CURDATE(), 5);
 Set @NumDaysRequested = (SELECT datediff(@CheckOutDate, @CheckInDate));
@@ -62,3 +61,6 @@ IsAvailable = True,
 BookingId = NULL
 WHERE BookingId = @BookingIdToCancel;
 COMMIT;
+
+
+select * from bookings;
