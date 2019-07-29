@@ -65,6 +65,10 @@ COMMIT;
 
 select * from bookings;
 
+-- --------------------------------
+
+-- REPORTS
+
 -- --------------------------------------
 -- total number of bookings in a date range by city
 SET @C = 'Montreal';
@@ -80,3 +84,9 @@ SELECT COUNT(*) FROM Listings Where City = @C;
 
 -- Rank hosts by number of listings per city
 SELECT ListerId,count(*),City FROM Listings Where City = @C Group By ListerId Order By ListerId ;
+
+-- Checking if a host has more than 10% of listings in a City
+-- SELECT ListerId,count(*),City FROM Listings Where City = @C Group By ListerId Order By ListerId;
+
+-- Report the hosts and renters with the largest number of cancellations in a year
+Select Count(*) as c,CancelledById FROM Bookings WHERE CancelledById IS NOT null GROUP BY CancelledById Order by c;
