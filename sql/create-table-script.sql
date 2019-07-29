@@ -24,13 +24,9 @@ CREATE TABLE Users (
     CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     LastLoggedInAt DATETIME,
     CountryId INTEGER NOT NULL,
---     ListerId INTEGER,
---     RenterId INTEGER,
 
     PRIMARY KEY (UserSIN),
     FOREIGN KEY(CountryId) REFERENCES Countries(Id) ON DELETE CASCADE,
---     FOREIGN KEY(ListerId) REFERENCES Listers(Id) ON DELETE CASCADE,
---     FOREIGN KEY(RenterId) REFERENCES Renters(Id) ON DELETE CASCADE,
 
     -- ensure unique email entries -> using this as a 'login' for now
     UNIQUE(Email),
@@ -124,23 +120,6 @@ CREATE TABLE Listings (
     
     -- Ensure num guests is positive
     CHECK(MaxNumGuests > 0 AND MaxNumGuests < 100)
-);
-
-DROP TABLE IF EXISTS Payments CASCADE;
-CREATE TABLE Payments (
-    Id INTEGER NOT NULL auto_increment,
-    Amount DECIMAL(19, 4) NOT NULL,
-    ProcessedOn DATETIME NOT NULL,
-    RefundedOn DATETIME,
-    PaypalEmail VARCHAR(320) NOT NULL,
-    CreditcardNumber VARCHAR(16) NOT NULL,
-
-    PRIMARY KEY(Id),
-    FOREIGN KEY (PaypalEmail) REFERENCES Paypals(Email) ON DELETE CASCADE,
-    FOREIGN KEY (CreditcardNumber) REFERENCES Creditcards(CardNumber) ON DELETE CASCADE,
-
-    -- ensure transaction amounts are not negative.
-    CHECK(Amount >= 0)
 );
 
 DROP TABLE IF EXISTS Bookings CASCADE;
